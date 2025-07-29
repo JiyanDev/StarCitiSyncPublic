@@ -20,8 +20,7 @@ Download the latest version here:
 
 ## 🐞 Report a Bug
 
-Found a bug or issue? Please open an [issue here](https://github.com/JiyanDev/StarCitiSyncPublic/issues) with a short description.  
-No account? You can also email me: `jiyandev [at] example.com` *(optional)*
+Found a bug or issue? Please open an [issue here](https://github.com/JiyanDev/StarCitiSyncPublic/issues) with a short description.
 
 ## 🔒 Notes
 
