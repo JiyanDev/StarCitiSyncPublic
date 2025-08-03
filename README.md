@@ -1,6 +1,6 @@
 # 🛰️ StarCitiSync
 
-**StarCitiSync** is a lightweight desktop app that tracks your Star Citizen missions, sessions, and economy — in real time.
+**StarCitiSync** is a lightweight desktop app that tracks your Star Citizen missions, sessions, kills, and economy — in real time.
 
 ## 📥 Download
 
