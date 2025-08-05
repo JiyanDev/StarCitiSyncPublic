@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <title>Game Session – Statistics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Vera+Mono&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    @font-face {
+      font-family: 'Vera Mono';
+      src: url('./fonts/VeraMono.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    body {
+      background-color: #181818;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    #timer {
+      font-size: 2rem;
+      color: #ffa94d;
+      margin-bottom: 2rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 1000px;
+      margin-bottom: 3rem;
+    }
+
+    .stat-card {
+      background-color: #222222;
+      padding: 1.2rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .stat-value#latest-mission {
+      display: block;
+      max-width: 100%;
+      max-height: 3.6em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.8em;
+      cursor: help;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #bbbbbb;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-top: 0.5rem;
+      color: #ffb347;
+    }
+
+    canvas {
+      max-width: 1000px;
+      width: 100%;
+      height: auto;
+      background-color: #1f1f1f;
+      border-radius: 12px;
+      padding: 1rem;
+      display: block;
+    }
+
+    .titlebar {
+  width: 100vw;
+  height: 36px;
+  background-color: #142a3a;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* centrera innehållet horisontellt */
+  padding: 0 1rem;
+  -webkit-app-region: drag;
+  user-select: none;
+  box-sizing: border-box;
+  position: relative; /* för att kunna positionera menyn absolut */
+}
+
+.quit-btn {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 1.1rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.2s;
+  -webkit-app-region: no-drag;
+}
+.quit-btn:hover {
+  background: #590d0d;
+}
+
+.menu-button {
+  position: absolute; /* tar ut menyn ur flödet */
+  left: 1rem; /* placera menyn 1rem från vänster */
+  font-size: 20px;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  color: #ffb347;
+  margin-left: 0; /* ta bort margin som annars stör */
+}
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 2rem;
+    }
+
+    h1.style1 {
+      font-family: 'Vera Mono', monospace;
+      font-size: 20px;
+      margin: 0;  /* ta bort vänstermarginal för perfekt centrering */
+      white-space: nowrap;
+      color: #ffa94d;
+      user-select: none;
+      transform: translateY(2px); /* finjustering av vertikal position */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    #spending-summary-card {
+      padding: 0.8rem 1rem;
+      font-size: 0.85rem;
+      max-width: 500px;
+      margin-top: 1rem;
+    }
+    #spending-summary-card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    #spending-summary-card .stat-label {
+      font-size: 0.75rem;
+    }
+    #spending-summary-card .stat-value {
+      font-size: 1rem;
+      text-align: right;
+    }
+    #spending-summary-card .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="titlebar">
+    <div class="menu-button">☰</div>
+    <h1 class="style1">StarCitiSync</h1>
+    <button id="quit-btn" class="quit-btn">x</button>
+  </div>
+  <div class="content">
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Session Time</div>
+        <div class="stat-value" id="timer">00:00:00</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Missions Completed</div>
+        <div class="stat-value" id="mission-count">0</div>
+
+        <div class="stat-label" style="margin-top:1rem;">Kills</div>
+        <div class="stat-value" id="kill-count">0</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Latest Mission</div>
+        <div class="stat-value" id="latest-mission">None Active</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Total Reward</div>
+        <div class="stat-value" id="total-reward">0 UEC</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Reward Last Hour</div>
+        <div class="stat-value" id="reward-last-hour">0 UEC</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Average per Hour</div>
+        <div class="stat-value" id="reward-per-hour">0 UEC/h</div>
+      </div>
+    </div>
+    <canvas id="rewardChart" height="100"></canvas>
+
+    <div class="stat-card" id="spending-summary-card" style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 500px; margin-top: 1rem;">
+      <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">💸 Spending Summary</h2>
+
+      <div class="stat-row">
+        <div class="stat-label" style="font-size: 0.75rem;">Total Spent:</div>
+        <div class="stat-value" id="total-spent" style="text-align:right; font-size: 1rem;">0 aUEC</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-label" style="font-size: 0.75rem;">🏪 Top Shop:</div>
+        <div class="stat-value" id="top-shop" style="text-align:right; font-size: 1rem;">–</div>
+      </div>
+      <!-- <div class="stat-row">
+        <div class="stat-label" style="font-size: 0.75rem;">📦 Object:</div>
+        <div class="stat-value" id="top-item" style="text-align:right; font-size: 1rem;">–</div>
+      </div> -->
+      <div class="stat-row">
+        <div class="stat-label" style="font-size: 0.75rem;">🔄 Transactions:</div>
+        <div class="stat-value" id="transaction-count" style="text-align:right; font-size: 1rem;">0</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-label" style="font-size: 0.75rem;">💰 Most Purchased Item (All Sessions):</div>
+        <div class="stat-value" id="top-global-item" style="text-align:right; font-size: 1rem;">–</div>
+    </div>
+</div>
+  </div>
+  <script>
+    document.getElementById('quit-btn').addEventListener('click', () => {
+      electronAPI.quitApp();
+    });
+
+    document.querySelector('.menu-button').addEventListener('click', () => {
+      //alert('Menu button clicked!');
+      // side panel toggle or open menu logic here
+    });
+
+    function resizeCanvasToDisplaySize(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const width = canvas.clientWidth * dpr;
+      const height = (canvas.clientWidth / 3) * dpr;
+
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return true;
+      }
+      return false;
+    }
+
+    const canvas = document.getElementById('rewardChart');
+    resizeCanvasToDisplaySize(canvas);
+
+    const ctx = document.getElementById('rewardChart').getContext('2d');
+    const rewardChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Reward Over Time',
+          data: [],
+          borderColor: '#ffb347',
+          backgroundColor: 'rgba(255, 179, 71, 0.1)',
+          borderWidth: 2,
+          tension: 0.25,
+          fill: true,
+          pointRadius: 3
+        }]
+      },
+      options: {
+        scales: {
+          x: {
+            ticks: { color: '#ccc' },
+            grid: { color: '#333' }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#ccc' },
+            grid: { color: '#333' }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: '#ccc' } }
+        }
+      }
+    });
+
+    session.onTimeUpdate(timeStr => {
+      document.getElementById('timer').innerText = timeStr;
+    });
+
+    session.onMissionCountUpdate(count => {
+      document.getElementById('mission-count').innerText = count;
+    });
+
+    session.onLatestMission(mission => {
+      const text = mission
+        ? `${mission.Contract} (${mission.CompletionType || 'In Progress'})`
+        : 'None Active';
+      const el = document.getElementById('latest-mission');
+      el.innerText = text;
+      el.title = text;
+    });
+
+    session.onRewardUpdate(total => {
+      document.getElementById('total-reward').innerText = `${total.toLocaleString()} UEC`;
+    });
+
+    session.onRewardLastHour(value => {
+      document.getElementById('reward-last-hour').innerText = `${value.toLocaleString()} UEC`;
+    });
+
+    session.onRewardPerHour(value => {
+      document.getElementById('reward-per-hour').innerText = `${Math.round(value).toLocaleString()} UEC/h`;
+    });
+
+    session.onShopSummary(spendings => {
+      //document.getElementById('shop-summary').innerText = JSON.stringify(spendings, null, 2);
+      //console.log('💰 Summary:', spendings);
+      document.getElementById('total-spent').innerText =
+      (spendings.TotalSpent != null
+        ? spendings.TotalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : '0.00') + ' aUEC';
+      document.getElementById('transaction-count').innerText = spendings.TotalTransactions ?? '0';
+      //document.getElementById('top-item').innerText = spendings.TopItem ?? '–';
+      document.getElementById('top-shop').innerText = spendings.TopShop ?? '–';
+      document.getElementById('top-global-item').innerText = spendings.TopItem ?? '–';
+    });
+
+    function updateRewardGraph() {
+      window.session.getRewardGraph().then(dataPoints => {
+        rewardChart.data.labels = dataPoints.map(dp => dp.label);
+        rewardChart.data.datasets[0].data = dataPoints.map(dp => dp.reward);
+        rewardChart.update();
+      });
+    }
+
+    function trackPlausible(eventName, props = {}) {
+      fetch('https://plausible.io/api/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: eventName,
+          url: 'app://starcitisync',
+          domain: 'starcitisyncpublic',
+          props
+        })
+      });
+    }
+    trackPlausible('app_open');
+
+    window.addEventListener('resize', () => {
+      const resized = resizeCanvasToDisplaySize(canvas);
+      if (resized) {
+        rewardChart.resize();
+      }
+      updateRewardGraph();
+    });
+
+    updateRewardGraph();
+
+    setInterval(updateRewardGraph, 60_000);
+  </script>
+</body>
+</html>

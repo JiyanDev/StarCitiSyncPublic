@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: transparent !important;
+      background: transparent !important;
+      -webkit-app-region: no-drag;
+      font-family: 'Vera Mono', monospace;
+      color: #ffa94d;
+      font-size: 20px;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    @font-face {
+      font-family: 'Vera Mono';
+      src: url('./fonts/VeraMono.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    #overlay-timer {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 8px 16px;
+      background-color: rgba(20, 42, 58, 0.6);
+      border-radius: 8px;
+    }
+
+    #latest-kills {
+      opacity: 0.00; 
+      transition: opacity 1.0s;
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+      background-color: transparent !important;
+      border-radius: 8px;
+      padding: 12px 16px;
+      min-width: 300px;
+      min-height: 5.5em;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    #latest-kills.visible {
+      opacity: 1;
+    }
+
+    .kill-event {
+      font-size: 16px;
+      line-height: 1.2;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s cubic-bezier(0.4,0,0.2,1), transform 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    .kill-event.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay-timer">00:00:00</div>
+  <div id="latest-kills"></div>
+
+  <script>
+    window.session.onTimeUpdate((timeStr) => {
+      document.getElementById('overlay-timer').innerText = timeStr;
+    });
+
+
+    
+    function prettifyEntityName(name) {
+      if (!name) return "";
+
+      name = name.replace(/[_-]\d{8,}$/, '');
+
+      let parts = name.split(/[_-]+/);
+
+      // (ex. PU, AEGS, MISC, DRAK, CNOU, CRUS, ANVL)
+      while (parts.length && /^[A-Z0-9]{2,6}$/.test(parts[0])) {
+        parts.shift();
+      }
+
+      while (parts.length && /^(Pilots?|Human|Enemy|GroundCombat|NPC|Contestedzones|PU)$/.test(parts[0])) {
+        parts.shift();
+      }
+
+      name = parts.join(' ');
+
+      name = name.replace(/\b\w/g, c => c.toUpperCase());
+
+      if (name.length > 32) {
+        name = name.slice(0, 29) + '...';
+      }
+
+      return name.trim();
+    }
+
+    function getKillIcon(damageType, weapon) {
+      if (damageType) {
+        switch (damageType) {
+          case "Suicide": return "💀";
+          case "SelfDestruct": return "💣";
+          case "VehicleDestruction": return "🚀";
+          case "Bullet": return "🔫";
+          case "Explosion": return "💥";
+          case "Collision": return "💥";
+          case "Crash": return "💥";
+          default: return "➜";
+        }
+      }
+      switch (weapon) {
+        case "Combat": return "⚔️";
+        case "SelfDestruct": return "💣";
+        case "Collision": return "💥";
+        default: return "➜";
+      }
+    }
+
+    window.session.onLatestKills((killEvents) => {
+      const container = document.getElementById('latest-kills');
+      const prev = Array.from(container.children).map(div => div.textContent);
+      const prevIds = Array.from(container.children).map(div => div.dataset.eventid);
+      container.innerHTML = '';
+      let shouldShow = false;
+
+      killEvents.forEach((event, idx) => {
+        const div = document.createElement('div');
+        div.className = 'kill-event';
+
+        if (event.EntityType === 'Vehicle') {
+          div.style.color = '#4dc9ff'; // blue
+          // div.innerHTML = `🚀 ${event.Killer} ➜ ${prettifyEntityName(event.EntityName)}`;
+        } else if (event.EntityType === 'person') {
+          div.style.color = '#ffa94d'; // orange
+          // div.innerHTML = `🧑 ${event.Killer} ➜ ${prettifyEntityName(event.EntityName)}`;
+        }
+        div.dataset.eventid = event.Id;
+
+        const dmgIcon = getKillIcon(event.DamageType, event.Weapon);
+        div.textContent = `${prettifyEntityName(event.Killer)} ${dmgIcon} ${prettifyEntityName(event.EntityName)}`;
+        
+        container.appendChild(div);
+        if (!prevIds.includes(String(event.Id)) || killEvents.length > prevIds.length) {
+          shouldShow = true;
+          setTimeout(() => {
+            div.classList.add('show');
+          }, 30 + idx * 60);
+        } else {
+          div.classList.add('show');
+        }
+      });
+      
+      if (shouldShow) {
+        container.classList.add('visible');
+        clearTimeout(container._hideTimeout);
+        container._hideTimeout = setTimeout(() => {
+          container.classList.remove('visible');
+        }, 6000);
+      }
+    });
+  </script>
+</body>
+</html>

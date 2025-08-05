@@ -1,0 +1,26 @@
+# Ignore node_modules
+node_modules/
+
+# Ignore log files
+*.log
+
+# Ignore VSCode settings
+.vscode/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Node.js
+node_modules/
+dist/
+out/
+.env
+
+# Electron Forge
+/.webpack/
+
+# Ignore all files in backend folder except .gitkeep
+/resources/backend/*
+!/resources/backend/.gitkeep
+
