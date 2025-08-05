@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+	<PublishSingleFile>true</PublishSingleFile>
+	<SelfContained>true</SelfContained>
+	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+	<UseWindowsForms>true</UseWindowsForms>
+	<PackageIcon>logo2.png</PackageIcon>
+	<FileVersion>1.0.0</FileVersion>
+	<ApplicationIcon>logo2.ico</ApplicationIcon>
+	<Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+  
+  <ItemGroup>
+   <None Include="tessdata\**\*.*">
+     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+   </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Services\NewFolder\**" />
+    <EmbeddedResource Remove="Services\NewFolder\**" />
+    <None Remove="Services\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="logo2.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.6" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.7" />
+    <PackageReference Include="System.Management" Version="9.0.6" />
+    <PackageReference Include="Tesseract" Version="5.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+   <Content Include="tessdata\**\*.*">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+   </Content>
+   <Content Include="x64\**\*.*">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+   </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="logo2.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+</Project>
