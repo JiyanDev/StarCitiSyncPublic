@@ -11,7 +11,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
 	<UseWindowsForms>true</UseWindowsForms>
 	<PackageIcon>logo2.png</PackageIcon>
-	<FileVersion>1.0.0</FileVersion>
+	<FileVersion>1.0.1</FileVersion>
 	<ApplicationIcon>logo2.ico</ApplicationIcon>
 	<Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>

@@ -269,6 +269,26 @@ async function getRewardPer10MinLastHour(sessionId) {
   });
 }
 
+function getLatestStallActors(sessionId, limit = 10) {
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
+      if (err) return reject(err);
+    });
+    const sql = `
+      SELECT * FROM ActorStallEvents
+      WHERE SessionId = ?
+        AND datetime(Timestamp) >= datetime('now', '-1 minute', 'localtime')
+      ORDER BY Timestamp DESC
+      LIMIT ?
+    `;
+    db.all(sql, [sessionId, limit], (err, rows) => {
+      db.close();
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
 function getdbPath() {
   let dbPath;
   if (process.env.NODE_ENV === 'development') {
@@ -291,6 +311,35 @@ function updateAppClose(sessionId, appCloseDate) {
   });
 }
 
+function getCommodityProfitAndROIForSession(sessionId) {
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
+      if (err) return reject(err);
+    });
+    const sql = `
+      SELECT
+        SUM(CASE WHEN EventType = 'SendCommoditySellRequest' AND Price IS NOT NULL THEN Price ELSE 0 END) AS total_sell,
+        SUM(CASE WHEN EventType = 'SendCommodityBuyRequest' AND Price IS NOT NULL THEN Price ELSE 0 END) AS total_buy
+      FROM CommodityBoxTransactions
+      WHERE SessionId = ?
+    `;
+    db.get(sql, [sessionId], (err, row) => {
+      db.close();
+      if (err) return reject(err);
+      const totalSell = row.total_sell ?? 0;
+      const totalBuy = row.total_buy ?? 0;
+      const profit = totalSell - totalBuy;
+      const roi = totalBuy > 0 ? (profit / totalBuy) * 100 : 0;
+      resolve({
+        profit,
+        roi,
+        totalBuy,
+        totalSell
+      });
+    });
+  });
+}
+
 
 module.exports = {
   getLatestSession,
@@ -304,5 +353,7 @@ module.exports = {
   getLatestOverlayKillEvents,
   initDb,
   getdbPath,
-  updateAppClose
+  updateAppClose,
+  getLatestStallActors,
+  getCommodityProfitAndROIForSession
 };

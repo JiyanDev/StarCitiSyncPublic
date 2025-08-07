@@ -180,6 +180,19 @@
       align-items: center;
       margin-bottom: 0.5rem;
     }
+    .stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  .stat-value {
+    font-size: 1rem;
+    text-align: right;
+  }
   </style>
 </head>
 <body>
@@ -225,31 +238,51 @@
       </div>
     </div>
     <canvas id="rewardChart" height="100"></canvas>
+    <div style="display: flex; gap: 1.5rem; justify-content: flex-start; align-items: flex-start; flex-wrap: wrap; margin-bottom: 2rem;">      
+      <div class="stat-card" id="spending-summary-card" style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 500px; margin-top: 1rem;">
+        <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">💸 Spending Summary</h2>
 
-    <div class="stat-card" id="spending-summary-card" style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 500px; margin-top: 1rem;">
-      <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">💸 Spending Summary</h2>
-
-      <div class="stat-row">
-        <div class="stat-label" style="font-size: 0.75rem;">Total Spent:</div>
-        <div class="stat-value" id="total-spent" style="text-align:right; font-size: 1rem;">0 aUEC</div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">Total Spent:</div>
+          <div class="stat-value" id="total-spent" style="text-align:right; font-size: 1rem;">0 aUEC</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">🏪 Top Shop:</div>
+          <div class="stat-value" id="top-shop" style="text-align:right; font-size: 1rem;">–</div>
+        </div>
+        <!-- <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">📦 Object:</div>
+          <div class="stat-value" id="top-item" style="text-align:right; font-size: 1rem;">–</div>
+        </div> -->
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">🔄 Transactions:</div>
+          <div class="stat-value" id="transaction-count" style="text-align:right; font-size: 1rem;">0</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">💰 Most Purchased Item (All Sessions):</div>
+          <div class="stat-value" id="top-global-item" style="text-align:right; font-size: 1rem;">–</div>
+        </div>
       </div>
-      <div class="stat-row">
-        <div class="stat-label" style="font-size: 0.75rem;">🏪 Top Shop:</div>
-        <div class="stat-value" id="top-shop" style="text-align:right; font-size: 1rem;">–</div>
+      <div class="stat-card" id="commodity-summary-card" style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 500px; margin-top: 1rem;">
+        <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">📦 Commodity Profit</h2>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">Profit:</div>
+          <div class="stat-value" id="commodity-profit" style="text-align:right; font-size: 1rem;">0 aUEC</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">ROI:</div>
+          <div class="stat-value" id="commodity-roi" style="text-align:right; font-size: 1rem;">0%</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">Total Bought:</div>
+          <div class="stat-value" id="commodity-total-buy" style="text-align:right; font-size: 1rem;">0 aUEC</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">Total Sold:</div>
+          <div class="stat-value" id="commodity-total-sell" style="text-align:right; font-size: 1rem;">0 aUEC</div>
+        </div>
       </div>
-      <!-- <div class="stat-row">
-        <div class="stat-label" style="font-size: 0.75rem;">📦 Object:</div>
-        <div class="stat-value" id="top-item" style="text-align:right; font-size: 1rem;">–</div>
-      </div> -->
-      <div class="stat-row">
-        <div class="stat-label" style="font-size: 0.75rem;">🔄 Transactions:</div>
-        <div class="stat-value" id="transaction-count" style="text-align:right; font-size: 1rem;">0</div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-label" style="font-size: 0.75rem;">💰 Most Purchased Item (All Sessions):</div>
-        <div class="stat-value" id="top-global-item" style="text-align:right; font-size: 1rem;">–</div>
     </div>
-</div>
   </div>
   <script>
     document.getElementById('quit-btn').addEventListener('click', () => {
@@ -362,6 +395,21 @@
         rewardChart.update();
       });
     }
+
+    function updateCommoditySummary() {
+      window.session.getCommodityProfitAndROI().then(({ profit, roi, totalBuy, totalSell }) => {
+        document.getElementById('commodity-profit').innerText =
+          (profit != null ? profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00') + ' aUEC';
+        document.getElementById('commodity-roi').innerText =
+          (roi != null ? roi.toFixed(1) : '0.0') + '%';
+        document.getElementById('commodity-total-buy').innerText =
+          (totalBuy != null ? totalBuy.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00') + ' aUEC';
+        document.getElementById('commodity-total-sell').innerText =
+          (totalSell != null ? totalSell.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00') + ' aUEC';
+      });
+    }
+    updateCommoditySummary();
+    setInterval(updateCommoditySummary, 10000);
 
     function trackPlausible(eventName, props = {}) {
       fetch('https://plausible.io/api/event', {

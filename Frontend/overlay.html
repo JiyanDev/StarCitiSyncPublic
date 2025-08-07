@@ -66,11 +66,53 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    #latest-stall-actors.hidden {
+      display: none;
+    }
+
+    #latest-stall-actors {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      background: rgba(20, 42, 58, 0.85);
+      border-radius: 8px;
+      padding: 12px 18px;
+      min-width: 260px;
+      color: #fff;
+      font-size: 16px;
+      font-family: 'Vera Mono', monospace;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      opacity: 1;
+      z-index: 10;
+    }
+    .stall-actor {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .stall-actor:last-child {
+      border-bottom: none;
+    }
+    .stall-actor .player {
+      font-weight: bold;
+      color: #ffa94d;
+    }
+    .stall-actor .length {
+      color: #4dc9ff;
+      font-variant-numeric: tabular-nums;
+    }
   </style>
 </head>
 <body>
   <div id="overlay-timer">00:00:00</div>
   <div id="latest-kills"></div>
+  <div id="latest-stall-actors"></div>
 
   <script>
     window.session.onTimeUpdate((timeStr) => {
@@ -126,6 +168,60 @@
         default: return "➜";
       }
     }
+    
+    // Animera Length för varje stall-actor
+    const stallActorState = {};
+    window.session.onLatestStallActors((stallActors) => {
+      const container = document.getElementById('latest-stall-actors');
+      container.innerHTML = '';
+      if (!stallActors || stallActors.length === 0) {
+        container.innerHTML = '<span style="color:#888;font-style:italic"></span>';
+        container.classList.add('hidden');
+        return;
+      }
+      container.classList.remove('hidden');
+
+      stallActors.forEach(actor => {
+        const prev = stallActorState[actor.Player];
+        const div = document.createElement('div');
+        div.className = 'stall-actor';
+        let startValue = typeof prev === 'number' ? prev : 0;
+        div.innerHTML = `<span class="player">${actor.Player}</span><span class="length">${startValue.toFixed(1)}m</span>`;
+        container.appendChild(div);
+        if (Math.abs(startValue - actor.Length) > 0.05) {
+          let current = startValue;
+          const target = actor.Length;
+          const step = (target - current) / 60;
+          const lengthSpan = div.querySelector('.length');
+          let i = 0;
+          lengthSpan.style.transition = 'color 0.2s';
+          lengthSpan.style.color = '#ff4d4d'; 
+          function animate() {
+            if (i < 30) {
+              current += step;
+              lengthSpan.textContent = `${current.toFixed(1)}m`;
+              i++;
+              requestAnimationFrame(animate);
+            } else {
+              lengthSpan.textContent = `${target.toFixed(1)}m`;
+              lengthSpan.style.color = '#4dc9ff'; // Tillbaka till blå
+            }
+          }
+          animate();
+        } else {
+          const lengthSpan = div.querySelector('.length');
+          lengthSpan.textContent = `${actor.Length.toFixed(1)}m`;
+          lengthSpan.style.color = '#4dc9ff';
+        }
+        stallActorState[actor.Player] = actor.Length;
+      });
+
+      Object.keys(stallActorState).forEach(player => {
+        if (!stallActors.find(a => a.Player === player)) {
+          delete stallActorState[player];
+        }
+      });
+    });
 
     window.session.onLatestKills((killEvents) => {
       const container = document.getElementById('latest-kills');

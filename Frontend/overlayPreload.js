@@ -10,5 +10,10 @@ contextBridge.exposeInMainWorld('session', {
     ipcRenderer.on('session:latest-kills', (_, events) => {
       callback(events);
     });
-  }
+  },
+  onLatestStallActors: (callback) => {
+  ipcRenderer.on('session:latest-stall-actors', (_, events) => {
+    callback(events);
+  });
+}
 });

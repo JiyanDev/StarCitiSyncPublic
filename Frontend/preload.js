@@ -17,5 +17,6 @@ contextBridge.exposeInMainWorld('session', {
   onRewardLastHour: (callback) => ipcRenderer.on('session:reward-last-hour', (event, value) => callback(value)),
   onRewardPerHour: (callback) => ipcRenderer.on('session:reward-per-hour', (event, value) => callback(value)),
   getRewardGraph: () => ipcRenderer.invoke('get-reward-graph'),
-  onShopSummary: (callback) => ipcRenderer.on('session:spendings', (event, spendings) => callback(spendings))
+  onShopSummary: (callback) => ipcRenderer.on('session:spendings', (event, spendings) => callback(spendings)),
+  getCommodityProfitAndROI: () => ipcRenderer.invoke('get-commodity-profit-roi'),
 });

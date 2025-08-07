@@ -3,7 +3,7 @@ const { autoUpdater } = require('electron-updater');
 const path = require('node:path');
 const fs = require('fs');
 const { spawn } = require('child_process'); 
-const {updateAppClose, getdbPath, initDb, getLatestSession, getSessionById, getMissionCountForSession, getLatestUnfinishedMission, getTotalRewardForSession, getRewardLastHourForSession, getRewardPer10MinLastHour, getShopSummary, getLatestOverlayKillEvents} = require('./main/db');
+const {getCommodityProfitAndROIForSession, getLatestStallActors, updateAppClose, getdbPath, initDb, getLatestSession, getSessionById, getMissionCountForSession, getLatestUnfinishedMission, getTotalRewardForSession, getRewardLastHourForSession, getRewardPer10MinLastHour, getShopSummary, getLatestOverlayKillEvents} = require('./main/db');
 const electronSquirrelStartup = require('electron-squirrel-startup');
 if (electronSquirrelStartup) {
   // Squirrel startup event, do not continue
@@ -125,6 +125,11 @@ ipcMain.handle('get-reward-graph', async () => {
   return data; // [{ label, reward }, ...]
 });
 
+ipcMain.handle('get-commodity-profit-roi', async () => {
+  if (!currentSessionId) return { profit: 0, roi: 0, totalBuy: 0, totalSell: 0 };
+  return await getCommodityProfitAndROIForSession(currentSessionId);
+});
+
 
 // Timer logic based on sessions in the database
 async function checkSessionLoop() {
@@ -141,6 +146,7 @@ async function checkSessionLoop() {
       pollRewardLastHour();
       pollSpendings();
       pollLatestOverlayKillEvents();
+      pollLatestStallActors();
     }
 
     if (currentSessionId) {
@@ -259,6 +265,17 @@ async function pollLatestOverlayKillEvents() {
   setTimeout(pollLatestOverlayKillEvents, 5000);
 }
 
+async function pollLatestStallActors() {
+  if (!overlayWindow || overlayWindow.isDestroyed()) return;
+  try {
+    const events = await getLatestStallActors(currentSessionId, 10);
+    overlayWindow.webContents.send('session:latest-stall-actors', events);
+  } catch (err) {
+    console.error("❌ Error fetching latest stall actors:", err.message);
+  }
+  setTimeout(pollLatestStallActors, 2000);
+}
+
 function stopTimer() {
   //console.log("🛑 Timer stopped");
   clearInterval(timer);
@@ -308,7 +325,7 @@ autoUpdater.on('update-downloaded', (info) => {
 
 let csharpProcess = null;
 app.whenReady().then(() => {
-   //csharpProcess = spawn('cmd.exe', ['/c', 'start', '', exePath]);
+  csharpProcess = spawn('cmd.exe', ['/c', 'start', '', exePath]);
     let exePath;
     if (app.isPackaged) {
        exePath = path.join(process.resourcesPath, 'backend', 'StarCitiSync.Client.exe');

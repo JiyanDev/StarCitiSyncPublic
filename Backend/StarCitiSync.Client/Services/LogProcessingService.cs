@@ -7,33 +7,36 @@ namespace StarCitiSync.Client.Services
     public class LogProcessingService
     { 
 
-        private readonly FileLogReader _logReader;
-        private readonly ShopTransactionTracker _shopTransactionTracker;
-        private readonly CommodityTransactionTracker _commodityBoxTransactionTracker;
-        private readonly KillTracker _killTracker;
-        private readonly MissionTracker _missionTracker;
-        private readonly MissionRepository _missionRepo;
-        private readonly KillEventRepository _killRepo;
-        private readonly ShopTransactionRepository _shopRepo;
-        private readonly CommodityBoxTransactionRepository _commodityBoxRepo;
-        private readonly SessionRepository _sessionRepo;
+      private readonly FileLogReader _logReader;
+      private readonly ShopTransactionTracker _shopTransactionTracker;
+      private readonly CommodityTransactionTracker _commodityBoxTransactionTracker;
+      private readonly KillTracker _killTracker;
+      private readonly MissionTracker _missionTracker;
+      private readonly ActorStallTracker _actorStallTracker;
 
-    public LogProcessingService(
-            string logFilePath,
-            string connectionString)
-        {
-            _logReader = new FileLogReader(logFilePath);
-            _shopTransactionTracker = new ShopTransactionTracker();
-            _killTracker = new KillTracker();
-            _missionTracker = new MissionTracker(_logReader);
-            _commodityBoxTransactionTracker = new CommodityTransactionTracker();
+      private readonly MissionRepository _missionRepo;
+      private readonly KillEventRepository _killRepo;
+      private readonly ShopTransactionRepository _shopRepo;
+      private readonly CommodityBoxTransactionRepository _commodityBoxRepo;
+      private readonly SessionRepository _sessionRepo;
+      private readonly ActorStallRepository _actorStallRepo;
 
-            _missionRepo = new MissionRepository(connectionString);
-            _killRepo = new KillEventRepository(connectionString);
-            _shopRepo = new ShopTransactionRepository(connectionString);
-            _commodityBoxRepo = new CommodityBoxTransactionRepository(connectionString);
-            _sessionRepo = new SessionRepository(connectionString);
-    }
+      public LogProcessingService(string logFilePath, string connectionString)
+      {
+        _logReader = new FileLogReader(logFilePath);
+        _shopTransactionTracker = new ShopTransactionTracker();
+        _killTracker = new KillTracker();
+        _missionTracker = new MissionTracker(_logReader);
+        _commodityBoxTransactionTracker = new CommodityTransactionTracker();
+        _actorStallTracker = new ActorStallTracker();
+
+        _missionRepo = new MissionRepository(connectionString);
+        _killRepo = new KillEventRepository(connectionString);
+        _shopRepo = new ShopTransactionRepository(connectionString);
+        _commodityBoxRepo = new CommodityBoxTransactionRepository(connectionString);
+        _sessionRepo = new SessionRepository(connectionString);
+        _actorStallRepo = new ActorStallRepository(connectionString);
+      }
 
     public async Task ProcessLogAsync(SessionInfo sessionInfo, CancellationToken cancellationToken)
     {
@@ -45,6 +48,7 @@ namespace StarCitiSync.Client.Services
           _killTracker.ProcessLogLine(line);
           _shopTransactionTracker.ProcessLogLine(line);
           _commodityBoxTransactionTracker.ProcessLogLine(line);
+          _actorStallTracker.ProcessLogLine(line);
           var endDate = SessionInfoReader.TryExtractSessionEndDate(line);
 
           if (_missionTracker.hasNewEvent && _missionTracker.LastMissionEvent != null)
@@ -60,6 +64,22 @@ namespace StarCitiSync.Client.Services
           {
             _killTracker.LastKillEvent.SessionId = sessionInfo.SessionId;
             _killRepo.Insert(_killTracker.LastKillEvent);
+          }
+
+          if (_actorStallTracker.HasNewStall && _actorStallTracker.LastStallEvent != null)
+          {
+            _actorStallTracker.LastStallEvent.SessionId = sessionInfo.SessionId;
+            var existing = _actorStallRepo.GetBySessionAndPlayer(sessionInfo.SessionId, _actorStallTracker.LastStallEvent.Player);
+
+            if (existing == null)
+            {
+              _actorStallRepo.Upsert(_actorStallTracker.LastStallEvent);
+            }
+            else if (_actorStallTracker.LastStallEvent.Timestamp > existing.Timestamp)
+            {
+              _actorStallTracker.LastStallEvent.Id = existing.Id;
+              _actorStallRepo.Upsert(_actorStallTracker.LastStallEvent);
+            }
           }
 
           if (_shopTransactionTracker.Transactions.Count > 0)

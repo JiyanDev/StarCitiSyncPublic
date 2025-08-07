@@ -32,7 +32,8 @@ namespace StarCitiSync.Client.Data
           new MissionRepository(connectionString),
           new ShopTransactionRepository(connectionString),
           new CommodityBoxTransactionRepository(connectionString),
-          new KillEventRepository(connectionString)
+          new KillEventRepository(connectionString),
+          new ActorStallRepository(connectionString)
       };
       foreach (var repo in repositories)
         repo.EnsureTable();
