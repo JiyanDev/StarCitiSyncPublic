@@ -325,13 +325,13 @@ autoUpdater.on('update-downloaded', (info) => {
 
 let csharpProcess = null;
 app.whenReady().then(() => {
-  csharpProcess = spawn('cmd.exe', ['/c', 'start', '', exePath]);
-    let exePath;
-    if (app.isPackaged) {
-       exePath = path.join(process.resourcesPath, 'backend', 'StarCitiSync.Client.exe');
-    } else {
-       exePath = path.join(__dirname, 'resources', 'backend', 'StarCitiSync.Client.exe');
-    }
+  let exePath;
+  if (app.isPackaged) {
+     exePath = path.join(process.resourcesPath, 'backend', 'StarCitiSync.Client.exe');
+  } else {
+     exePath = path.join(__dirname, 'resources', 'backend', 'StarCitiSync.Client.exe');
+  }
+    //csharpProcess = spawn('cmd.exe', ['/c', 'start', '', exePath]);
     csharpProcess = spawn(exePath, [], {
       detached: false,
       stdio: 'ignore'

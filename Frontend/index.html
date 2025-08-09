@@ -19,6 +19,7 @@
       background-color: #181818;
       color: #e0e0e0;
       font-family: 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
       max-width: 1400px;
       margin: 0 auto;
       padding: 0;
@@ -93,50 +94,52 @@
       display: block;
     }
 
-    .titlebar {
-  width: 100vw;
-  height: 36px;
-  background-color: #142a3a;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center; /* centrera innehållet horisontellt */
-  padding: 0 1rem;
-  -webkit-app-region: drag;
-  user-select: none;
-  box-sizing: border-box;
-  position: relative; /* för att kunna positionera menyn absolut */
-}
+  .titlebar {
+    width: 100vw;
+    height: 36px;
+    background-color: #142a3a;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    -webkit-app-region: drag;
+    user-select: none;
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
 
-.quit-btn {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: #ff4d4d;
-  color: #fff;
-  border: none;
-  padding: 0.4rem 1.1rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  z-index: 10;
-  transition: background 0.2s;
-  -webkit-app-region: no-drag;
-}
-.quit-btn:hover {
-  background: #590d0d;
-}
+  .quit-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    padding: 0.4rem 1.1rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.2s;
+    -webkit-app-region: no-drag;
+  }
+  .quit-btn:hover {
+    background: #590d0d;
+  }
 
-.menu-button {
-  position: absolute; /* tar ut menyn ur flödet */
-  left: 1rem; /* placera menyn 1rem från vänster */
-  font-size: 20px;
-  cursor: pointer;
-  -webkit-app-region: no-drag;
-  color: #ffb347;
-  margin-left: 0; /* ta bort margin som annars stör */
-}
+  .menu-button {
+    position: absolute; /* tar ut menyn ur flödet */
+    left: 1rem; /* placera menyn 1rem från vänster */
+    font-size: 20px;
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+    color: #ffb347;
+    margin-left: 0; /* ta bort margin som annars stör */
+  }
 
     .content {
       flex: 1;

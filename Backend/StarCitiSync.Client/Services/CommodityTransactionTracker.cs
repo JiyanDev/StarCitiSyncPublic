@@ -33,7 +33,9 @@ namespace StarCitiSync.Client.Services
         var quantityMatch = Regex.Match(line, @"quantity\[([0-9\.]+)\s*([a-zA-Z]+)?\]");
         var commodityNameMatch = Regex.Match(line, @"commodityName\[([^\]]*)\]");
         var cargoBoxDataMatch = Regex.Match(line, @"Cargo Box Data:\s*(.*?)(?:\s*\[Team_|$)");
-        DateTime.TryParse(timeMatch.Groups[1].Value, out var timestamp);
+        DateTime? timestamp = null;
+        if (timeMatch.Success && DateTime.TryParse(timeMatch.Groups[1].Value, null, System.Globalization.DateTimeStyles.AdjustToUniversal, out var parsedTime))
+          timestamp = parsedTime.ToLocalTime();
 
         bool anyBox = false;
         if (cargoBoxDataMatch.Success)
@@ -97,7 +99,9 @@ namespace StarCitiSync.Client.Services
         var quantityMatch = Regex.Match(line, @"quantity\[([0-9\.]+)\]");
         var commodityNameMatch = Regex.Match(line, @"commodityName\[([^\]]*)\]");
         var cargoBoxDataMatch = Regex.Match(line, @"Cargo Box Data:\s*([^\[]+)");
-        DateTime.TryParse(timeMatch.Groups[1].Value, out var timestamp);
+        DateTime? timestamp = null;
+        if (timeMatch.Success && DateTime.TryParse(timeMatch.Groups[1].Value, null, System.Globalization.DateTimeStyles.AdjustToUniversal, out var parsedTime))
+          timestamp = parsedTime.ToLocalTime();
 
         bool anyBox = false;
         if (cargoBoxDataMatch.Success)

@@ -58,7 +58,10 @@ namespace StarCitiSync.Client.Services
         var generatorNameMatch = Regex.Match(line, @"generator name\s*\[([^\]]+)\]");
         var contractMatch = Regex.Match(line, @"contract\s*\[([^\]]+)\]");
 
-        string timestamp = timeMatch.Success ? timeMatch.Groups[1].Value : "N/A";
+        DateTime? timestamp = null;
+        if (timeMatch.Success && DateTime.TryParse(timeMatch.Groups[1].Value, null, System.Globalization.DateTimeStyles.AdjustToUniversal, out var parsedTime))
+          timestamp = parsedTime.ToLocalTime();
+
         string missionId = missionIdMatch.Success ? missionIdMatch.Groups[1].Value : "N/A";
         string generatorName = generatorNameMatch.Success ? generatorNameMatch.Groups[1].Value : "N/A";
         string contract = contractMatch.Success ? contractMatch.Groups[1].Value : "N/A";
@@ -78,7 +81,7 @@ namespace StarCitiSync.Client.Services
             EventType = "Started",
             GeneratorName = generatorName,
             Contract = contract,
-            StartTime = DateTime.TryParse(timestamp, out var ts) ? ts : null
+            StartTime = timestamp
           };
           var prevColor = Console.ForegroundColor;
           Console.ForegroundColor = ConsoleColor.Blue;
@@ -93,7 +96,10 @@ namespace StarCitiSync.Client.Services
         var missionIdMatch = Regex.Match(line, @"MissionId\[([^\]]+)\]");
         var completionTypeMatch = Regex.Match(line, @"CompletionType\[([^\]]+)\]");
 
-        string timestamp = timeMatch.Success ? timeMatch.Groups[1].Value : "N/A";
+        DateTime? timestamp = null;
+        if (timeMatch.Success && DateTime.TryParse(timeMatch.Groups[1].Value, null, System.Globalization.DateTimeStyles.AdjustToUniversal, out var parsedTime))
+          timestamp = parsedTime.ToLocalTime();
+
         string missionId = missionIdMatch.Success ? missionIdMatch.Groups[1].Value : "N/A";
         string completionType = completionTypeMatch.Success ? completionTypeMatch.Groups[1].Value : "N/A";
 
@@ -111,7 +117,7 @@ namespace StarCitiSync.Client.Services
             MissionId = missionId,
             EventType = "Ended",
             CompletionType = completionType,
-            EndTime = DateTime.TryParse(timestamp, out var ts) ? ts : null
+            EndTime = timestamp
           };
           var prevColor = Console.ForegroundColor;
           Console.ForegroundColor = ConsoleColor.DarkBlue;

@@ -2,7 +2,7 @@ public class CommodityBoxTransaction
 {
     public int Id { get; set; } 
     public string SessionId { get; set; } 
-    public DateTime Timestamp { get; set; }
+    public DateTime? Timestamp { get; set; }
     public string EventType { get; set; }
     public string PlayerId { get; set; }
     public string ShopId { get; set; }

@@ -30,8 +30,7 @@ namespace StarCitiSync.Client.Services
             var dateString = logStartedMatch.Groups[1].Value;
             if (DateTime.TryParse(dateString, null, System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out var parsedDate))
             {
-              var swedishTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-              sessionInfo.StartDate = TimeZoneInfo.ConvertTimeFromUtc(parsedDate, swedishTimeZone);
+              sessionInfo.StartDate = TimeZoneInfo.ConvertTimeFromUtc(parsedDate, TimeZoneInfo.Local);
             }
           }
         }
@@ -86,8 +85,7 @@ namespace StarCitiSync.Client.Services
       {
         if (DateTime.TryParse(endDateString, null, System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out var parsedDate))
         {
-          var swedishTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-          return TimeZoneInfo.ConvertTimeFromUtc(parsedDate, swedishTimeZone);
+          return TimeZoneInfo.ConvertTimeFromUtc(parsedDate, TimeZoneInfo.Local);
         }
       }
       return null;

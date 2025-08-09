@@ -3,6 +3,9 @@ module.exports = {
     icon: 'assets/citisync.ico',
     extraResource: [
       'resources/backend'
+    ],
+    ignore: [
+      /starcitisync\.db$/i
     ]
   },
   makers: [

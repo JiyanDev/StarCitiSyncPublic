@@ -54,7 +54,7 @@ namespace StarCitiSync.Client.Data
                 (SessionId, Timestamp, EventType, PlayerId, ShopId, ShopName, KioskId, Price, ShopPricePerCentiSCU, ResourceGuid, AutoLoading, Quantity, QuantityUnit, CommodityName, BoxSize, UnitAmount)
                 VALUES ($SessionId, $Timestamp, $EventType, $PlayerId, $ShopId, $ShopName, $KioskId, $Price, $ShopPricePerCentiSCU, $ResourceGuid, $AutoLoading, $Quantity, $QuantityUnit, $CommodityName, $BoxSize, $UnitAmount);";
             cmd.Parameters.AddWithValue("$SessionId", transaction.SessionId ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("$Timestamp", transaction.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"));
+            cmd.Parameters.AddWithValue("$Timestamp", transaction.Timestamp?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("$EventType", transaction.EventType ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("$PlayerId", transaction.PlayerId ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("$ShopId", transaction.ShopId ?? (object)DBNull.Value);
@@ -176,7 +176,7 @@ namespace StarCitiSync.Client.Data
                 WHERE Id = $Id;";
             cmd.Parameters.AddWithValue("$Id", transaction.Id);
             cmd.Parameters.AddWithValue("$SessionId", transaction.SessionId ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("$Timestamp", transaction.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"));
+            cmd.Parameters.AddWithValue("$Timestamp", transaction.Timestamp?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("$EventType", transaction.EventType ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("$PlayerId", transaction.PlayerId ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("$ShopId", transaction.ShopId ?? (object)DBNull.Value);

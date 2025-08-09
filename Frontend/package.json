@@ -1,18 +1,9 @@
 {
   "name": "starcitisync",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "author": "JiyanDev (https://github.com/JiyanDev)",
   "main": "main.js",
-  "build": {
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "JiyanDev",
-        "repo": "starCitiSync"
-      }
-    ]
-  },
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -32,5 +23,12 @@
     "electron-squirrel-startup": "^1.0.1",
     "electron-updater": "^6.6.2",
     "sqlite3": "^5.1.7"
-  }
+  },
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "JiyanDev",
+      "repo": "StarCitiSyncPublic"
+    }
+  ]
 }
