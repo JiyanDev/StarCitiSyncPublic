@@ -67,8 +67,9 @@
       transform: translateY(0);
     }
 
+    #latest-stall-actors:empty,
     #latest-stall-actors.hidden {
-      display: none;
+      display: none !important;
     }
 
     #latest-stall-actors {
@@ -175,7 +176,6 @@
       const container = document.getElementById('latest-stall-actors');
       container.innerHTML = '';
       if (!stallActors || stallActors.length === 0) {
-        container.innerHTML = '<span style="color:#888;font-style:italic"></span>';
         container.classList.add('hidden');
         return;
       }

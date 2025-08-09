@@ -18,7 +18,7 @@ let currentSessionId = null;
 let timer = null;
 let startTime = null;
 let tray = null;
-
+let allowTimerStart = false;
 
 
 function createWindow() {
@@ -135,8 +135,8 @@ ipcMain.handle('get-commodity-profit-roi', async () => {
 async function checkSessionLoop() {
   try {
     const session = await getLatestSession();
-
-    if (session && session.SessionId !== currentSessionId) {
+    
+    if (allowTimerStart && session && session.SessionId !== currentSessionId) {
       //console.log("🟢 new session found:", session.SessionId);
       currentSessionId = session.SessionId;
       startTime = new Date(session.StartDate);
@@ -147,6 +147,7 @@ async function checkSessionLoop() {
       pollSpendings();
       pollLatestOverlayKillEvents();
       pollLatestStallActors();
+      allowTimerStart = false;
     }
 
     if (currentSessionId) {
@@ -155,6 +156,7 @@ async function checkSessionLoop() {
         //console.log("🔴 Session ended:", sessionData.EndDate);
         stopTimer();
         currentSessionId = null;
+        allowTimerStart = false;
       }
     }
   } catch (err) {
@@ -334,8 +336,19 @@ app.whenReady().then(() => {
     //csharpProcess = spawn('cmd.exe', ['/c', 'start', '', exePath]);
     csharpProcess = spawn(exePath, [], {
       detached: false,
-      stdio: 'ignore'
+      stdio: ['ignore', 'pipe', 'pipe'] // ändra från 'ignore'
     });
+
+    csharpProcess.stdout.setEncoding('utf8');
+    csharpProcess.stdout.on('data', (data) => {
+      const lines = data.toString().split('\n');
+      for (const line of lines) {
+        if (line.startsWith('Log Start Date:')) {
+          allowTimerStart = true;
+        }
+      }
+    });
+
     setTimeout(() => {
       //console.log("5 second timeout");
     }, 5000);
