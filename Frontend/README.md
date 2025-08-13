@@ -59,6 +59,10 @@ Packaging and distribution are handled via [Electron Forge](https://www.electron
 - Configuration in [`forge.config.js`](forge.config.js)
 - Icons and resources in `assets/` and `resources/backend/`
 
+## License
+
+Apache-2.0 – see [LICENSE](LICENSE).
+
 ---
 
 **Developer:** [JiyanDev](https://github.com/JiyanDev)

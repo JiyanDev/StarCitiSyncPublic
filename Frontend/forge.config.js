@@ -1,11 +1,17 @@
 module.exports = {
   packagerConfig: {
     icon: 'assets/citisync.ico',
+    asar: true,
     extraResource: [
       'resources/backend'
     ],
     ignore: [
-      /starcitisync\.db$/i
+      /starcitisync\.db$/i,
+      /\.git/,
+      /README\.md$/,
+      /test/,
+      /\.gitignore$/,
+      /\/node_modules\/\.cache/
     ]
   },
   makers: [

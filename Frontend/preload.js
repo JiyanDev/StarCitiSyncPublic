@@ -6,7 +6,8 @@ contextBridge.exposeInMainWorld('darkMode', {
 });
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  quitApp: () => ipcRenderer.send('window-all-closed')
+  quitApp: () => ipcRenderer.send('window-all-closed'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version')
 });
 
 contextBridge.exposeInMainWorld('session', {

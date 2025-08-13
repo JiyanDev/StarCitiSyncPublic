@@ -1,10 +1,11 @@
 const { app, BrowserWindow, ipcMain, nativeTheme, Tray, Menu, screen } = require('electron');
-const { autoUpdater } = require('electron-updater');
 const path = require('node:path');
 const fs = require('fs');
 const { spawn } = require('child_process'); 
 const {getCommodityProfitAndROIForSession, getLatestStallActors, updateAppClose, getdbPath, initDb, getLatestSession, getSessionById, getMissionCountForSession, getLatestUnfinishedMission, getTotalRewardForSession, getRewardLastHourForSession, getRewardPer10MinLastHour, getShopSummary, getLatestOverlayKillEvents} = require('./main/db');
 const electronSquirrelStartup = require('electron-squirrel-startup');
+const { checkForUpdates } = require('./updater');
+
 if (electronSquirrelStartup) {
   // Squirrel startup event, do not continue
   app.quit();
@@ -19,7 +20,6 @@ let timer = null;
 let startTime = null;
 let tray = null;
 let allowTimerStart = false;
-
 
 function createWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
@@ -44,7 +44,6 @@ function createWindow() {
       nodeIntegration: false,
     }
   });
-
 
   mainWindow.on('close', () => {
     if (tray) {
@@ -130,6 +129,7 @@ ipcMain.handle('get-commodity-profit-roi', async () => {
   return await getCommodityProfitAndROIForSession(currentSessionId);
 });
 
+ipcMain.handle('get-app-version', () => app.getVersion());
 
 // Timer logic based on sessions in the database
 async function checkSessionLoop() {
@@ -292,38 +292,6 @@ function formatTime(seconds) {
   return `${h}:${m}:${s}`;
 }
 
-// Auto-update eventhandlers
-const { dialog } = require('electron');
-autoUpdater.on('checking-for-update', () => {
-  if (mainWindow) mainWindow.webContents.send('update:checking');
-});
-autoUpdater.on('update-available', (info) => {
-  if (mainWindow) mainWindow.webContents.send('update:available', info);
-});
-autoUpdater.on('update-not-available', (info) => {
-  if (mainWindow) mainWindow.webContents.send('update:not-available', info);
-});
-autoUpdater.on('error', (err) => {
-  if (mainWindow) mainWindow.webContents.send('update:error', err == null ? "unknown" : err.message);
-});
-autoUpdater.on('download-progress', (progressObj) => {
-  if (mainWindow) mainWindow.webContents.send('update:progress', progressObj);
-});
-autoUpdater.on('update-downloaded', (info) => {
-  if (mainWindow) {
-    mainWindow.webContents.send('update:downloaded', info);
-    dialog.showMessageBox(mainWindow, {
-      type: 'info',
-      buttons: ['Restart now', 'Later'],
-      title: 'Update Ready',
-      message: 'A new version has been downloaded. Do you want to restart now to install it?'
-    }).then(result => {
-      if (result.response === 0) {
-        autoUpdater.quitAndInstall();
-      }
-    });
-  }
-});
 
 let csharpProcess = null;
 app.whenReady().then(() => {
@@ -411,7 +379,11 @@ app.whenReady().then(() => {
     }
   ]);
   tray.setContextMenu(trayMenu);
-  autoUpdater.checkForUpdatesAndNotify();
+
+  if (app.isPackaged) {
+    checkForUpdates();
+  }
+  
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
