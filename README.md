@@ -26,7 +26,6 @@ Found a bug or issue? Please open an [issue here](https://github.com/JiyanDev/St
 
 ## 🔒 Notes
 
-- Only the installer is available here
 - StarCitiSync is not affiliated with Cloud Imperium Games
 
 ## 💡 Contribute
