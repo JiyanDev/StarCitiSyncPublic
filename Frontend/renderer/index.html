@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <title>Game Session – Statistics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Vera+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="content">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Session Time</div>
+        <div class="stat-value" id="timer">00:00:00</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-row">
+          <div class="stat-label">Missions Completed</div>
+          <div class="stat-value" id="mission-count">0</div>
+        </div>
+        <div class="stat-row" style="margin-top:1rem;">
+          <div class="stat-label">Kills</div>
+          <div class="stat-value" id="kill-count">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Latest Mission</div>
+        <div class="stat-value" id="latest-mission">None Active</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Total Reward</div>
+        <div class="stat-value" id="total-reward">0 UEC</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Reward Last Hour</div>
+        <div class="stat-value" id="reward-last-hour">0 UEC</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Average per Hour</div>
+        <div class="stat-value" id="reward-per-hour">0 UEC/h</div>
+      </div>
+    </div>
+    <canvas id="rewardChart" height="100"></canvas>
+    <div style="display: flex; gap: 1.5rem; justify-content: flex-start; align-items: flex-start; flex-wrap: wrap; margin-bottom: 2rem;">      
+      <div class="stat-card" id="spending-summary-card" style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 500px; margin-top: 1rem;">
+        <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">💸 Spending Summary</h2>
+
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">Total Spent:</div>
+          <div class="stat-value" id="total-spent" style="text-align:right; font-size: 1rem;">0 aUEC</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">🏪 Top Shop:</div>
+          <div class="stat-value" id="top-shop" style="text-align:right; font-size: 1rem;">–</div>
+        </div>
+        <!-- <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">📦 Object:</div>
+          <div class="stat-value" id="top-item" style="text-align:right; font-size: 1rem;">–</div>
+        </div> -->
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">🔄 Transactions:</div>
+          <div class="stat-value" id="transaction-count" style="text-align:right; font-size: 1rem;">0</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">💰 Most Purchased Item (All Sessions):</div>
+          <div class="stat-value" id="top-global-item" style="text-align:right; font-size: 1rem;">–</div>
+        </div>
+      </div>
+      <div class="stat-card" id="commodity-summary-card" style="padding: 0.8rem 1rem; font-size: 0.85rem; max-width: 500px; margin-top: 1rem;">
+        <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">📦 Commodity Profit</h2>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">Profit:</div>
+          <div class="stat-value" id="commodity-profit" style="text-align:right; font-size: 1rem;">0 aUEC</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">ROI:</div>
+          <div class="stat-value" id="commodity-roi" style="text-align:right; font-size: 1rem;">0%</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">Total Bought:</div>
+          <div class="stat-value" id="commodity-total-buy" style="text-align:right; font-size: 1rem;">0 aUEC</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label" style="font-size: 0.75rem;">Total Sold:</div>
+          <div class="stat-value" id="commodity-total-sell" style="text-align:right; font-size: 1rem;">0 aUEC</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="footer-root"></div>
+  <script src="index.js"></script>
+</body>
+</html>

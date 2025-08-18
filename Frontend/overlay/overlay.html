@@ -116,6 +116,10 @@
   <div id="latest-stall-actors"></div>
 
   <script>
+    function getLatestKillsSetting() {
+      return localStorage.getItem('latestKillsSetting') || 'default';
+    }
+    
     window.session.onTimeUpdate((timeStr) => {
       document.getElementById('overlay-timer').innerText = timeStr;
     });
@@ -170,6 +174,24 @@
       }
     }
     
+    function updateOverlayTimerVisibility() {
+      const overlayTimer = document.getElementById('overlay-timer');
+      if (overlayTimer) {
+        const visible = localStorage.getItem('showOverlayTimer') !== 'false';
+        overlayTimer.style.display = visible ? '' : 'none';
+      }
+    }
+
+    // Kör direkt vid sidladdning
+    updateOverlayTimerVisibility();
+
+    // Lyssna på ändringar från andra fönster/flikar
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'showOverlayTimer') {
+        updateOverlayTimerVisibility();
+      }
+    });
+
     // Animera Length för varje stall-actor
     const stallActorState = {};
     window.session.onLatestStallActors((stallActors) => {
@@ -224,47 +246,76 @@
     });
 
     window.session.onLatestKills((killEvents) => {
+      window._lastKillEvents = killEvents;
       const container = document.getElementById('latest-kills');
-      const prev = Array.from(container.children).map(div => div.textContent);
+      const setting = getLatestKillsSetting();
+      
+      // Hantera "off"
+      if (setting === 'off') {
+        container.style.display = 'none';
+        return;
+      } else {
+        container.style.display = '';
+      }
+
       const prevIds = Array.from(container.children).map(div => div.dataset.eventid);
       container.innerHTML = '';
       let shouldShow = false;
 
-      killEvents.forEach((event, idx) => {
-        const div = document.createElement('div');
-        div.className = 'kill-event';
+  killEvents.forEach((event, idx) => {
+      const div = document.createElement('div');
+      div.className = 'kill-event';
 
-        if (event.EntityType === 'Vehicle') {
-          div.style.color = '#4dc9ff'; // blue
-          // div.innerHTML = `🚀 ${event.Killer} ➜ ${prettifyEntityName(event.EntityName)}`;
-        } else if (event.EntityType === 'person') {
-          div.style.color = '#ffa94d'; // orange
-          // div.innerHTML = `🧑 ${event.Killer} ➜ ${prettifyEntityName(event.EntityName)}`;
-        }
-        div.dataset.eventid = event.Id;
+      if (event.EntityType === 'Vehicle') {
+        div.style.color = '#4dc9ff';
+      } else if (event.EntityType === 'person') {
+        div.style.color = '#ffa94d';
+      }
+      div.dataset.eventid = event.Id;
 
-        const dmgIcon = getKillIcon(event.DamageType, event.Weapon);
-        div.textContent = `${prettifyEntityName(event.Killer)} ${dmgIcon} ${prettifyEntityName(event.EntityName)}`;
-        
-        container.appendChild(div);
-        if (!prevIds.includes(String(event.Id)) || killEvents.length > prevIds.length) {
-          shouldShow = true;
-          setTimeout(() => {
-            div.classList.add('show');
-          }, 30 + idx * 60);
-        } else {
+      const dmgIcon = getKillIcon(event.DamageType, event.Weapon);
+      div.textContent = `${prettifyEntityName(event.Killer)} ${dmgIcon} ${prettifyEntityName(event.EntityName)}`;
+
+      container.appendChild(div);
+      if (!prevIds.includes(String(event.Id)) || killEvents.length > prevIds.length) {
+        shouldShow = true;
+        setTimeout(() => {
           div.classList.add('show');
-        }
-      });
-      
+        }, 30 + idx * 60);
+      } else {
+        div.classList.add('show');
+      }
+    });
+
+    if (setting === 'active') {
+      if (killEvents.length > 0) {
+        container.classList.add('visible');
+      } else {
+        container.classList.remove('visible');
+      }
+      clearTimeout(container._hideTimeout);
+    } else {
       if (shouldShow) {
         container.classList.add('visible');
         clearTimeout(container._hideTimeout);
         container._hideTimeout = setTimeout(() => {
           container.classList.remove('visible');
         }, 6000);
+      } else {
+        container.classList.remove('visible');
       }
-    });
+    }
+  });
+
+  window.addEventListener('storage', (e) => {
+  if (e.key === 'latestKillsSetting') {
+    // Trigga omritning genom att anropa onLatestKills igen med senaste data
+    // (Du kan spara senaste killEvents i en variabel och anropa handlern igen)
+    if (window._lastKillEvents) {
+      window.session.onLatestKills(window._lastKillEvents);
+    }
+  }
+});
   </script>
 </body>
 </html>

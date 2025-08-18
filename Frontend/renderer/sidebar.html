@@ -1,0 +1,74 @@
+<template id="side-panel-template">
+  <div id="side-panel" style="
+    position: fixed;
+    top: 0;
+    left: -320px;
+    width: 320px;
+    height: 100vh;
+    background: #202b36;
+    color: #fff;
+    box-shadow: 2px 0 16px rgba(0,0,0,0.25);
+    z-index: 2000;
+    transition: left 0.25s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    flex-direction: column;
+    padding-top: 36px;
+  ">
+    <!-- Header -->
+    <div style="padding: 1.2rem 1.5rem; border-bottom: 1px solid #263545;">
+      <strong style="font-size: 1.2rem;">✨ StarCitiSync</strong>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex; gap:0.5rem; padding: 1rem 1.5rem 0 1.5rem;">
+      <button class="nav-tab-btn" id="nav-home" style="flex:1;padding:0.6rem 0;font-size:1rem;background:#263545;color:#ffb347;border:none;border-radius:6px;cursor:pointer;">Home</button>
+      <button class="nav-tab-btn" id="nav-kills" style="flex:1;padding:0.6rem 0;font-size:1rem;background:#263545;color:#ffb347;border:none;border-radius:6px;cursor:pointer;visibility: hidden;">Kills</button>
+      <button class="nav-tab-btn" id="nav-trading" style="flex:1;padding:0.6rem 0;font-size:1rem;background:#263545;color:#ffb347;border:none;border-radius:6px;cursor:pointer;visibility: hidden;">Trading</button>
+    </div>
+    <!-- Overlay Settings -->
+    <div style="flex:1; overflow-y:auto;">
+      <div style="padding: 1.5rem;">
+        <h3 style="color:#ffb347;margin-top:0;">Overlay Settings</h3>
+        <label class="toggle-switch" style="display:block;margin:1rem 0;">
+          <input type="checkbox" id="toggle-overlay-timer" hidden>
+          <span class="slider"></span>
+          Show Overlay Timer
+        </label>
+        <label class="toggle-switch" style="display:block;margin:1rem 0;">
+          <input type="checkbox" id="toggle-player-stall" hidden>
+          <span class="slider"></span>
+          Show Player Stall
+        </label>
+        <label style="display:block;margin:1rem 0;">
+          <span style="margin-right:0.5em;">Show Latest Kills</span>
+          <select id="toggle-latest-kills" style="padding:0.2em 0.5em;">
+            <option value="default">Default</option>
+            <option value="active">Active</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
+        <label id="latest-kills-seconds-label" style="display:none;margin-left:2.5em;font-size:0.95em;">
+          <span>Show time (s):</span>
+          <input
+            type="number"
+            id="latest-kills-seconds"
+            min="2"
+            max="30"
+            step="1"
+            value="6"
+            style="
+              width: 3.5em;
+              margin-left: 0.5em;
+              padding: 0.2em 0.5em;
+              border-radius: 6px;
+              border: 1px solid #263545;
+              background: #263545;
+              color: #fff;
+              font-size: 1em;
+              text-align: center;
+              appearance: textfield;
+            "
+          >
+        </label>
+      </div>
+    </div>
+  </div>

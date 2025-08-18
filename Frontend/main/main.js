@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, nativeTheme, Tray, Menu, screen } = require
 const path = require('node:path');
 const fs = require('fs');
 const { spawn } = require('child_process'); 
-const {getCommodityProfitAndROIForSession, getLatestStallActors, updateAppClose, getdbPath, initDb, getLatestSession, getSessionById, getMissionCountForSession, getLatestUnfinishedMission, getTotalRewardForSession, getRewardLastHourForSession, getRewardPer10MinLastHour, getShopSummary, getLatestOverlayKillEvents} = require('./main/db');
+const {getCommodityProfitAndROIForSession, getLatestStallActors, updateAppClose, getdbPath, initDb, getLatestSession, getSessionById, getMissionCountForSession, getLatestUnfinishedMission, getTotalRewardForSession, getRewardLastHourForSession, getRewardPer10MinLastHour, getShopSummary, getLatestOverlayKillEvents} = require('./db');
 const electronSquirrelStartup = require('electron-squirrel-startup');
 const { checkForUpdates } = require('./updater');
 
@@ -26,20 +26,20 @@ function createWindow() {
   const { width: screenWidth, height: screenHeight } = primaryDisplay.workArea;
 
   // Dynamic Size: 80% of screen, but at least 1100x800
-  const winWidth = Math.max(Math.min(Math.round(screenWidth * 0.6), 1300), 1000);
-  const winHeight = Math.max(Math.round(screenHeight * 0.8), 800);
+  const winWidth = Math.max(Math.min(Math.round(screenWidth * 0.6), 1000), 1000);
+  const winHeight = Math.max(Math.round(screenHeight * 0.8), 700) -100;
 
   mainWindow = new BrowserWindow({
     width: winWidth, //1200,
     height: winHeight, //980,
-    minWidth: 1000,
-    minHeight: 800,
-    icon: path.join(__dirname, 'assets/citisync.ico'),
+    minWidth: winWidth,
+    minHeight: winHeight,
+    icon: path.join(__dirname, '..', 'assets/citisync.ico'),
     titleBarStyle: 'hidden',
     frame: false,
     darkTheme: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, '..', 'preloads', 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     }
@@ -56,7 +56,7 @@ function createWindow() {
     }
   });
 
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile('renderer/index.html');
 
   const { width, height } = primaryDisplay.workArea;
   overlayWindow = new BrowserWindow({
@@ -73,7 +73,7 @@ function createWindow() {
     skipTaskbar: true,
     focusable: false,
     webPreferences: {
-      preload: path.join(__dirname, 'overlayPreload.js'),
+      preload: path.join(__dirname, '..', 'overlay', 'overlayPreload.js'),
       nodeIntegration: false,
       contextIsolation: true,
       backgroundThrottling: false
@@ -82,7 +82,7 @@ function createWindow() {
   overlayWindow.setIgnoreMouseEvents(true);
   overlayWindow.setAlwaysOnTop(true, 'screen-saver');
   overlayWindow.setBounds({ x: 0, y: 0, width, height });
-  overlayWindow.loadFile('overlay.html');
+  overlayWindow.loadFile(path.join(__dirname, '..', 'overlay', 'overlay.html'));
   overlayWindow.webContents.once('did-finish-load', () => {
     overlayWindow.show();
   });
@@ -299,12 +299,12 @@ app.whenReady().then(() => {
   if (app.isPackaged) {
      exePath = path.join(process.resourcesPath, 'backend', 'StarCitiSync.Client.exe');
   } else {
-     exePath = path.join(__dirname, 'resources', 'backend', 'StarCitiSync.Client.exe');
+     exePath = path.join(__dirname, '..', 'resources', 'backend', 'StarCitiSync.Client.exe');
   }
     //csharpProcess = spawn('cmd.exe', ['/c', 'start', '', exePath]);
     csharpProcess = spawn(exePath, [], {
       detached: false,
-      stdio: ['ignore', 'pipe', 'pipe'] // ändra från 'ignore'
+      stdio: ['ignore', 'pipe', 'pipe']
     });
 
     csharpProcess.stdout.setEncoding('utf8');
@@ -352,7 +352,7 @@ app.whenReady().then(() => {
 
   waitForDatabaseAndStart();
 
-  tray = new Tray(path.join(__dirname, 'assets/logo2.png'));
+  tray = new Tray(path.join(__dirname, '..', 'assets', 'logo2.png'));
   const trayMenu = Menu.buildFromTemplate([
     {
       label: 'Open',

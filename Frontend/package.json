@@ -3,7 +3,7 @@
   "version": "1.0.4",
   "description": "",
   "author": "JiyanDev (https://github.com/JiyanDev)",
-  "main": "main.js",
+  "main": "main/main.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",

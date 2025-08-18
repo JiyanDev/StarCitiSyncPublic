@@ -1,0 +1,29 @@
+<template id="topbar-template">
+  <div class="titlebar">
+    <div class="menu-button">☰</div>
+    <h1 class="style1">StarCitiSync</h1>
+    <div id="version-label" style="margin-right:1.2rem;color:#bbb;font-size:1rem;position:absolute;right:3.5rem;top:50%;transform:translateY(-50%);">
+      <a id="version-link"
+        href="https://github.com/JiyanDev/StarCitiSyncPublic/releases/latest"
+        target="_blank"
+        style="
+          display: inline-block;
+          padding: 0.3rem 1.1rem;
+          border-radius: 6px;
+          color: inherit;
+          text-decoration: none;
+          cursor: pointer;
+          -webkit-app-region: no-drag;
+          background: rgba(0,0,0,0);
+          transition: background 0.15s;
+        "
+        onmouseover="this.style.background='rgba(255,255,255,0.07)'"
+        onmouseout="this.style.background='rgba(0,0,0,0)'"
+      ></a>
+    </div>
+    <div id="update-btn" style="display:none;position:absolute;right:7.5rem;top:50%;transform:translateY(-50%);background:#4caf50;color:#fff;border:none;padding:0.4rem 1.1rem;border-radius:6px;font-size:1rem;cursor:pointer;z-index:10;transition:background 0.2s;-webkit-app-region:no-drag;">
+      Update
+    </div>
+    <button id="quit-btn" class="quit-btn">x</button>
+  </div>
+</template>

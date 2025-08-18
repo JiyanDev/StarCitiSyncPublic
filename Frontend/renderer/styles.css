@@ -1,0 +1,245 @@
+:root {
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  body { background: #333; color: white; }
+}
+
+@media (prefers-color-scheme: light) {
+  body { background: #ddd; color: black; }
+}
+
+* {
+      box-sizing: border-box;
+    }
+    @font-face {
+      font-family: 'Vera Mono';
+      src: url('./fonts/VeraMono.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      margin: 0;
+      padding: 0;
+      background-color: #181818;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    #timer {
+      font-size: 2rem;
+      color: #ffa94d;
+      margin-bottom: 2rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 1000px;
+      margin-bottom: 3rem;
+    }
+
+    .stat-card {
+      background-color: #222222;
+      padding: 1.2rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .stat-value#latest-mission {
+      display: block;
+      max-width: 100%;
+      max-height: 3.6em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.8em;
+      cursor: help;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #bbbbbb;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-top: 0.5rem;
+      color: #ffb347;
+    }
+
+    canvas {
+      max-width: 1000px;
+      width: 100%;
+      height: auto;
+      background-color: #1f1f1f;
+      border-radius: 12px;
+      padding: 1rem;
+      display: block;
+    }
+
+  .titlebar {
+    width: 100vw;
+    height: 36px;
+    background-color: #142a3a;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    -webkit-app-region: drag;
+    user-select: none;
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .quit-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    padding: 0.4rem 1.1rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.2s;
+    -webkit-app-region: no-drag;
+  }
+  .quit-btn:hover {
+    background: #590d0d;
+  }
+
+  .menu-button {
+    position: absolute;
+    left: 1rem;
+    font-size: 20px;
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+    color: #ffb347;
+    margin-left: 0;
+  }
+
+    .content {
+      flex: 1 0 auto;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      box-sizing: border-box;
+    }
+
+    h1.style1 {
+      font-family: 'Vera Mono', monospace;
+      font-size: 20px;
+      margin: 0;  
+      white-space: nowrap;
+      color: #ffa94d;
+      user-select: none;
+      transform: translateY(2px); 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    #spending-summary-card {
+      padding: 0.8rem 1rem;
+      font-size: 0.85rem;
+      max-width: 500px;
+      margin-top: 1rem;
+    }
+    #spending-summary-card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    #spending-summary-card .stat-label {
+      font-size: 0.75rem;
+    }
+    #spending-summary-card .stat-value {
+      font-size: 1rem;
+      text-align: right;
+    }
+    #spending-summary-card .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  .stat-value {
+    font-size: 1rem;
+    text-align: right;
+  }
+  footer {
+    margin-top: auto;
+  }
+
+  /* Toggle Switch Styles */
+.toggle-switch {
+  position: relative;
+  padding-left: 48px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 1rem;
+  color: #fff;
+}
+.toggle-switch input:checked + .slider {
+  background-color: #ffb347;
+}
+.toggle-switch .slider {
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  width: 36px;
+  height: 20px;
+  background-color: #263545;
+  border-radius: 20px;
+  transition: background 0.2s;
+}
+.toggle-switch .slider:before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle-switch input:checked + .slider:before {
+  transform: translateX(16px);
+}
