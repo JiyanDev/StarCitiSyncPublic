@@ -182,17 +182,14 @@
       }
     }
 
-    // Kör direkt vid sidladdning
     updateOverlayTimerVisibility();
 
-    // Lyssna på ändringar från andra fönster/flikar
     window.addEventListener('storage', (e) => {
       if (e.key === 'showOverlayTimer') {
         updateOverlayTimerVisibility();
       }
     });
 
-    // Animera Length för varje stall-actor
     const stallActorState = {};
     window.session.onLatestStallActors((stallActors) => {
       const container = document.getElementById('latest-stall-actors');
@@ -226,7 +223,7 @@
               requestAnimationFrame(animate);
             } else {
               lengthSpan.textContent = `${target.toFixed(1)}m`;
-              lengthSpan.style.color = '#4dc9ff'; // Tillbaka till blå
+              lengthSpan.style.color = '#4dc9ff';
             }
           }
           animate();
@@ -294,23 +291,27 @@
         container.classList.remove('visible');
       }
       clearTimeout(container._hideTimeout);
-    } else {
-      if (shouldShow) {
+    } 
+    else if (setting === 'default') {
+      let seconds = parseInt(localStorage.getItem('latestKillsSeconds'), 10);
+      if (isNaN(seconds) || seconds < 2 || seconds > 30) seconds = 6;
+
+      if (shouldShow && killEvents.length > 0) {
         container.classList.add('visible');
         clearTimeout(container._hideTimeout);
         container._hideTimeout = setTimeout(() => {
           container.classList.remove('visible');
-        }, 6000);
-      } else {
+        }, seconds * 1000);
+      }
+      if (killEvents.length === 0) {
         container.classList.remove('visible');
+        clearTimeout(container._hideTimeout);
       }
     }
   });
 
   window.addEventListener('storage', (e) => {
   if (e.key === 'latestKillsSetting') {
-    // Trigga omritning genom att anropa onLatestKills igen med senaste data
-    // (Du kan spara senaste killEvents i en variabel och anropa handlern igen)
     if (window._lastKillEvents) {
       window.session.onLatestKills(window._lastKillEvents);
     }
