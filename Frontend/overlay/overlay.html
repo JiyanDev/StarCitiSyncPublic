@@ -311,12 +311,25 @@
   });
 
   window.addEventListener('storage', (e) => {
-  if (e.key === 'latestKillsSetting') {
-    if (window._lastKillEvents) {
-      window.session.onLatestKills(window._lastKillEvents);
+    if (e.key === 'latestKillsSetting') {
+      const container = document.getElementById('latest-kills');
+      const setting = getLatestKillsSetting();
+      if (window._lastKillEvents) {
+        // Re-run the kill handler to update UI
+        window.session.onLatestKills(window._lastKillEvents);
+
+        // If switching to default and there are kills, start timeout
+        if (setting === 'default' && window._lastKillEvents.length > 0) {
+          let seconds = parseInt(localStorage.getItem('latestKillsSeconds'), 10);
+          if (isNaN(seconds) || seconds < 2 || seconds > 30) seconds = 6;
+          clearTimeout(container._hideTimeout);
+          container._hideTimeout = setTimeout(() => {
+            container.classList.remove('visible');
+          }, seconds * 1000);
+        }
+      }
     }
-  }
-});
+  });
   </script>
 </body>
 </html>
