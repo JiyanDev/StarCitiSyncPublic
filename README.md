@@ -36,7 +36,7 @@ Feel free to open issues or submit pull requests if you find bugs or want to imp
 ## ☕ Support
 
 If you like this project, consider supporting me on Ko-fi:
-- [Discord Server](https://discord.gg/BCMHFA3N)
+
 [![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/jiyandev)
 ---
 
