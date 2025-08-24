@@ -1,6 +1,7 @@
 # 🛰️ StarCitiSync
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-Ko--fi-%23ff5f5f?logo=ko-fi&logoColor=white&style=flat-square)](https://ko-fi.com/jiyandev)
 [![GitHub stars](https://img.shields.io/github/stars/JiyanDev/StarCitiSyncPublic.svg?style=social)](https://github.com/JiyanDev/StarCitiSyncPublic/stargazers)
+[![Discord](https://img.shields.io/discord/BCMHFA3N?label=Join%20us%20on%20Discord&logo=discord&style=flat)](https://discord.gg/BCMHFA3N)
 
 **StarCitiSync** is a lightweight desktop app that tracks your Star Citizen missions, sessions, kills, and economy — in real time.
 
