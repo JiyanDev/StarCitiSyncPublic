@@ -33,15 +33,9 @@ Found a bug or issue? Please open an [issue here](https://github.com/JiyanDev/St
 
 Feel free to open issues or submit pull requests if you find bugs or want to improve something!
 
-### 🤝 Join the Community
-
-Got questions, ideas, or just want to hang out with other contributors?
-
-<p align="center">
-  <a href="https://discord.gg/BCMHFA3N">
-    <img src="https://img.shields.io/discord/BCMHFA3N?label=Join%20us%20on%20Discord&logo=discord&style=for-the-badge" alt="Discord">
-  </a>
-</p>
+Got questions, ideas, or just want to hang out with other contributors?  
+Join our [Discord community](https://discord.gg/BCMHFA3N)!  
+[![Discord](https://img.shields.io/discord/1407437482538307695?label=Join%20us%20on%20Discord&logo=discord&style=flat)](https://discord.gg/BCMHFA3N)
 
 ## ☕ Support
 
