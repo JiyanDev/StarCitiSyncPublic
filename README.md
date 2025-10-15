@@ -4,6 +4,7 @@
 [![Discord](https://img.shields.io/discord/BCMHFA3N?label=Join%20us%20on%20Discord&logo=discord&style=flat)](https://discord.gg/BCMHFA3N)
 
 **StarCitiSync** is a lightweight desktop app that tracks your Star Citizen missions, sessions, kills, and economy — in real time.
+<img width="600" height="600" alt="image" src="https://github.com/user-attachments/assets/7d1b81ec-a45b-4e84-8df8-fb73a7b76587" />
 
 ## 📥 Download
 
