@@ -36,29 +36,31 @@ namespace StarCitiSync.Client.Services
         }
         else
         {
-          var processes = Process.GetProcessesByName(processName);
-          foreach (var process2 in processes)
+          // Give the process a moment to finish launching before reading its path
+          await Task.Delay(2000);
+          foreach (var candidate in Process.GetProcessesByName(processName))
           {
             try
             {
-              await Task.Delay(10000);
-              exePath = GetExecutablePath(process2);
-              Console.WriteLine($"PID {process2.Id}: {exePath}");
+              exePath = GetExecutablePath(candidate);
+              Console.WriteLine($"PID {candidate.Id}: {exePath}");
+              if (exePath != null)
+                break;
             }
             catch (Exception ex)
             {
-              Console.WriteLine($"Fel: {ex.Message}");
+              Console.WriteLine($"Error: {ex.Message}");
             }
           }
           if (exePath == null)
-            throw new InvalidOperationException("Kunde inte hitta sökväg till StarCitizen-processen.");
+            throw new InvalidOperationException("Could not find the path to the StarCitizen process.");
 
           string? liveDir = Directory.GetParent(Directory.GetParent(exePath)!.FullName)!.FullName;
           logFilePath = Path.Combine(liveDir, "Game.log");
 
           if (!File.Exists(logFilePath))
           {
-            Console.WriteLine($"Game.log hittades inte i {logFilePath}. Väntar på att filen ska skapas...");
+            Console.WriteLine($"Game.log not found at {logFilePath}. Waiting for the file to be created...");
             while (!File.Exists(logFilePath))
             {
               await Task.Delay(1000);

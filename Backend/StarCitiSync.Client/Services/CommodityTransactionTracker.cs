@@ -12,10 +12,11 @@ namespace StarCitiSync.Client.Services
 {
   public class CommodityTransactionTracker : ILogLineProcessor
   {
-    private readonly List<CommodityBoxTransaction> _transactions = new();
-    public IReadOnlyList<CommodityBoxTransaction> Transactions => _transactions;
+    private readonly List<CommodityBoxTransaction> _newTransactions = new();
+    public IReadOnlyList<CommodityBoxTransaction> NewTransactions => _newTransactions;
     public void ProcessLogLine(object logLine)
     {
+      _newTransactions.Clear();
       if (logLine == null) return;
       string line = logLine.ToString();
 
@@ -44,7 +45,7 @@ namespace StarCitiSync.Client.Services
           foreach (Match m in boxPairs)
           {
             anyBox = true;
-            _transactions.Add(new CommodityBoxTransaction
+            _newTransactions.Add(new CommodityBoxTransaction
             {
               Timestamp = timestamp,
               EventType = "SendCommodityBuyRequest",
@@ -66,7 +67,7 @@ namespace StarCitiSync.Client.Services
         }
         if (!anyBox)
         {
-          _transactions.Add(new CommodityBoxTransaction
+          _newTransactions.Add(new CommodityBoxTransaction
           {
             Timestamp = timestamp,
             EventType = "SendCommodityBuyRequest",
@@ -110,7 +111,7 @@ namespace StarCitiSync.Client.Services
           foreach (Match m in boxPairs)
           {
             anyBox = true;
-            _transactions.Add(new CommodityBoxTransaction
+            _newTransactions.Add(new CommodityBoxTransaction
             {
               Timestamp = timestamp,
               EventType = "SendCommoditySellRequest",
@@ -132,7 +133,7 @@ namespace StarCitiSync.Client.Services
         }
         if (!anyBox)
         {
-          _transactions.Add(new CommodityBoxTransaction
+          _newTransactions.Add(new CommodityBoxTransaction
           {
             Timestamp = timestamp,
             EventType = "SendCommoditySellRequest",

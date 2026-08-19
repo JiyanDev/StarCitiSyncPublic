@@ -141,6 +141,8 @@ namespace StarCitiSync.Client.Services
       while (string.IsNullOrEmpty(sessionInfo.SessionId))
       {
           sessionInfo = _sessionInfoReader.ReadSessionInfo(logFilePath);
+          if (string.IsNullOrEmpty(sessionInfo.SessionId))
+              await Task.Delay(1000);
       }
 
       if (string.IsNullOrEmpty(sessionInfo.SessionId))

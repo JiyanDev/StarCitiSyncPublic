@@ -18,7 +18,7 @@
 
     @font-face {
       font-family: 'Vera Mono';
-      src: url('./fonts/VeraMono.ttf') format('truetype');
+      src: url('../fonts/VeraMono.ttf') format('truetype');
       font-weight: normal;
       font-style: normal;
     }
@@ -242,7 +242,7 @@
       });
     });
 
-    window.session.onLatestKills((killEvents) => {
+    function renderKillEvents(killEvents) {
       window._lastKillEvents = killEvents;
       const container = document.getElementById('latest-kills');
       const setting = getLatestKillsSetting();
@@ -308,7 +308,9 @@
         clearTimeout(container._hideTimeout);
       }
     }
-  });
+  }
+
+  window.session.onLatestKills(renderKillEvents);
 
   window.addEventListener('storage', (e) => {
     if (e.key === 'latestKillsSetting') {
@@ -316,7 +318,7 @@
       const setting = getLatestKillsSetting();
       if (window._lastKillEvents) {
         // Re-run the kill handler to update UI
-        window.session.onLatestKills(window._lastKillEvents);
+        renderKillEvents(window._lastKillEvents);
 
         // If switching to default and there are kills, start timeout
         if (setting === 'default' && window._lastKillEvents.length > 0) {

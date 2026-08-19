@@ -110,10 +110,9 @@ namespace StarCitiSync.Client.Services
       if (HasNewKill && lastKillDescription != null)
       {
         var prevColor = Console.ForegroundColor;
-        Console.ForegroundColor = LastKillEvent.EntityType == "Vehicle" ? ConsoleColor.DarkMagenta : ConsoleColor.DarkRed;
+        Console.ForegroundColor = LastKillEvent?.EntityType == "Vehicle" ? ConsoleColor.DarkMagenta : ConsoleColor.DarkRed;
         Console.WriteLine(GetLastKillDescription());
         Console.ForegroundColor = prevColor;
-        Console.ForegroundColor = LastKillEvent?.EntityType == "Vehicle" ? ConsoleColor.DarkMagenta : ConsoleColor.DarkRed;
       }
     }
   }

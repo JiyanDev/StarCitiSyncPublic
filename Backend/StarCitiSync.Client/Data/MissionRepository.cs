@@ -1,43 +1,14 @@
 ﻿using Microsoft.Data.Sqlite;
 using StarCitiSync.Client.Data.Interfaces;
 using StarCitiSync.Client.Models;
-using StarCitiSync.Client.Services.OCR;
 using System;
-using System.Diagnostics.Contracts;
-using System.Drawing;
-using System.Drawing; // For Bitmap
 using System.IO;
-using System.Windows.Forms; // For screen capture
-using Tesseract; // Add this using
 
 namespace StarCitiSync.Client.Data
 {
   public class MissionRepository : ITableInitializer
   {
     private readonly string _connectionString;
-
-
-    public int ReadRewardFromScreen()
-    {
-      var reader = new RewardReader();
-
-      var gameWindowRect = reader.GetGameWindowRect("Star Citizen");
-      if (gameWindowRect == Rectangle.Empty)
-      {
-        Console.WriteLine("Star Citizen-fönster inte hittat");
-        return 0;
-      }
-
-      //var rewardAreaRelativeToGame = new Rectangle(2000 - 1900, 240 - 100, 350, 45);
-      var rewardAreaRelativeToGame = reader.GetScaledRewardArea(gameWindowRect);
-
-      int reward = reader.ReadRewardFromGame("Star Citizen", rewardAreaRelativeToGame);
-      Console.WriteLine($"🎁 Reward: {reward}");
-
-      if (reward > 0)
-        return reward;
-      return 0;
-    }
 
     public MissionRepository(string connectionString)
     {
@@ -64,6 +35,7 @@ namespace StarCitiSync.Client.Data
                       FOREIGN KEY (SessionId) REFERENCES Sessions(SessionId)
                   );";
       cmd.ExecuteNonQuery();
+      EnsureRewardTable();
     }
 
     public void EnsureRewardTable()
@@ -125,20 +97,13 @@ namespace StarCitiSync.Client.Data
       return count > 0;
     }
 
-    public void Insert(MissionEvent missionEvent)
+    public void Insert(MissionEvent missionEvent, int reward)
     {
-      EnsureRewardTable();
-
       if (MissionExists(missionEvent.StartTime, missionEvent.MissionId))
         return;
 
       using var conn = new SqliteConnection(_connectionString);
       conn.Open();
-
-      var contract = missionEvent.Contract ?? string.Empty;
-      var scannedReward = ReadRewardFromScreen();
-      var reward = GetOrInsertReward(contract, scannedReward);
-      Console.WriteLine($"Reward for contract '{contract}': {reward}");
 
       var cmd = conn.CreateCommand();
       cmd.CommandText = @"
@@ -243,6 +208,21 @@ namespace StarCitiSync.Client.Data
       var cmd = conn.CreateCommand();
       cmd.CommandText = "DELETE FROM MissionEvents WHERE Id = $Id;";
       cmd.Parameters.AddWithValue("$Id", id);
+      cmd.ExecuteNonQuery();
+    }
+
+    public void UpdateReward(string sessionId, string missionId, int reward)
+    {
+      using var conn = new SqliteConnection(_connectionString);
+      conn.Open();
+      var cmd = conn.CreateCommand();
+      cmd.CommandText = @"
+                UPDATE MissionEvents
+                SET Reward = $Reward
+                WHERE MissionId = $MissionId AND SessionId = $SessionId;";
+      cmd.Parameters.AddWithValue("$SessionId", sessionId);
+      cmd.Parameters.AddWithValue("$MissionId", missionId);
+      cmd.Parameters.AddWithValue("$Reward", reward);
       cmd.ExecuteNonQuery();
     }
 

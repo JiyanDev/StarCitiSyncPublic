@@ -114,7 +114,7 @@ ipcMain.handle('dark-mode:system', () => {
 });
 
 ipcMain.handle('get-reward-graph', async () => {
-  dbPath = getdbPath();
+  const dbPath = getdbPath();
   if (!dbPath) {
     console.warn('DB not ready in get-reward-graph');
     return [];
@@ -167,7 +167,7 @@ async function checkSessionLoop() {
 }
 
 function startTimer() {
-  //console.log("⏱️ Timer started:", startTime.toISOString());
+  if (timer) clearInterval(timer);
   timer = setInterval(async () => {
     if (!startTime) return;
     const diff = Date.now() - startTime.getTime();
@@ -255,7 +255,7 @@ async function pollSpendings() {
 }
 
 async function pollLatestOverlayKillEvents() {
-  if (!overlayWindow || overlayWindow.isDestroyed()) return;
+  if (!currentSessionId || !overlayWindow || overlayWindow.isDestroyed()) return;
 
   try {
     const events = await getLatestOverlayKillEvents(5);
@@ -268,7 +268,7 @@ async function pollLatestOverlayKillEvents() {
 }
 
 async function pollLatestStallActors() {
-  if (!overlayWindow || overlayWindow.isDestroyed()) return;
+  if (!currentSessionId || !overlayWindow || overlayWindow.isDestroyed()) return;
   try {
     const events = await getLatestStallActors(currentSessionId, 10);
     overlayWindow.webContents.send('session:latest-stall-actors', events);

@@ -100,7 +100,7 @@ function getLatestUnfinishedMission(sessionId) {
     db.get(
       `
       SELECT * FROM MissionEvents
-      WHERE SessionId = ? AND (CompletionType IS NULL OR CompletionType != 'Success')
+      WHERE SessionId = ? AND CompletionType IS NULL
       ORDER BY Id DESC
       LIMIT 1
       `,
@@ -234,7 +234,7 @@ async function getRewardPer10MinLastHour(sessionId) {
         SessionId = ?
         AND EventType = 'Ended' 
         AND CompletionType = 'Complete'
-        AND EndTime >= datetime('now', '-1 hour')
+        AND EndTime >= datetime('now', '-1 hour', 'localtime')
       GROUP BY time_bucket
       ORDER BY time_bucket ASC;
     `;
