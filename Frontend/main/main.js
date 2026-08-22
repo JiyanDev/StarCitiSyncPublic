@@ -4,12 +4,18 @@ const fs = require('fs');
 const { spawn } = require('child_process'); 
 const {getCommodityProfitAndROIForSession, getLatestStallActors, updateAppClose, getdbPath, initDb, getLatestSession, getSessionById, getMissionCountForSession, getLatestUnfinishedMission, getTotalRewardForSession, getRewardLastHourForSession, getRewardPer10MinLastHour, getShopSummary, getLatestOverlayKillEvents} = require('./db');
 const electronSquirrelStartup = require('electron-squirrel-startup');
-const { checkForUpdates } = require('./updater');
+const { updateElectronApp } = require('update-electron-app');
 
 if (electronSquirrelStartup) {
   // Squirrel startup event, do not continue
   app.quit();
 }
+
+// Background auto-updates via update.electronjs.org; applied on next app start
+updateElectronApp({
+  updateInterval: '1 hour',
+  notifyUser: false
+});
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 let appStartTime = Date.now();
 
@@ -380,10 +386,6 @@ app.whenReady().then(() => {
   ]);
   tray.setContextMenu(trayMenu);
 
-  if (app.isPackaged) {
-    checkForUpdates();
-  }
-  
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
