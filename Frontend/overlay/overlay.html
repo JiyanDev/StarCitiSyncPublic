@@ -156,6 +156,8 @@
     function getKillIcon(damageType, weapon) {
       if (damageType) {
         switch (damageType) {
+          case "Bounty": return "🎯";
+          case "Incapacitated": return "💀";
           case "Suicide": return "💀";
           case "SelfDestruct": return "💣";
           case "VehicleDestruction": return "🚀";

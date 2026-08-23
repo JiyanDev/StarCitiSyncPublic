@@ -12,6 +12,7 @@ namespace StarCitiSync.Client.Services
       private readonly ShopTransactionTracker _shopTransactionTracker;
       private readonly CommodityTransactionTracker _commodityBoxTransactionTracker;
       private readonly KillTracker _killTracker;
+      private readonly BountyKillTracker _bountyKillTracker;
       private readonly MissionTracker _missionTracker;
       private readonly ActorStallTracker _actorStallTracker;
       private readonly RewardReader _rewardReader;
@@ -28,6 +29,7 @@ namespace StarCitiSync.Client.Services
         _logReader = new FileLogReader(logFilePath);
         _shopTransactionTracker = new ShopTransactionTracker();
         _killTracker = new KillTracker();
+        _bountyKillTracker = new BountyKillTracker();
         _missionTracker = new MissionTracker(_logReader);
         _commodityBoxTransactionTracker = new CommodityTransactionTracker();
         _actorStallTracker = new ActorStallTracker();
@@ -49,6 +51,7 @@ namespace StarCitiSync.Client.Services
         {
           _missionTracker.ProcessLogLine(line);
           _killTracker.ProcessLogLine(line);
+          _bountyKillTracker.ProcessLogLine(line);
           _shopTransactionTracker.ProcessLogLine(line);
           _commodityBoxTransactionTracker.ProcessLogLine(line);
           _actorStallTracker.ProcessLogLine(line);
@@ -77,6 +80,16 @@ namespace StarCitiSync.Client.Services
           {
             _killTracker.LastKillEvent.SessionId = sessionInfo.SessionId;
             _killRepo.Insert(_killTracker.LastKillEvent);
+          }
+
+          if (_bountyKillTracker.HasNewKill && _bountyKillTracker.LastKillEvent is { } inferredKill)
+          {
+            inferredKill.SessionId = sessionInfo.SessionId;
+            if (inferredKill.DamageType == "Bounty")
+              inferredKill.Killer = sessionInfo.Username ?? "You";
+            else
+              inferredKill.EntityName = sessionInfo.Username ?? "You";
+            _killRepo.Insert(inferredKill);
           }
 
           if (_actorStallTracker.HasNewStall && _actorStallTracker.LastStallEvent != null)
