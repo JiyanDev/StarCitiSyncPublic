@@ -1,5 +1,6 @@
 using StarCitiSync.Client.Models;
 using StarCitiSync.Client.Data;
+using StarCitiSync.Client.Services.OCR;
 using System.Threading.Tasks;
 
 namespace StarCitiSync.Client.Services
@@ -11,8 +12,10 @@ namespace StarCitiSync.Client.Services
       private readonly ShopTransactionTracker _shopTransactionTracker;
       private readonly CommodityTransactionTracker _commodityBoxTransactionTracker;
       private readonly KillTracker _killTracker;
+      private readonly BountyKillTracker _bountyKillTracker;
       private readonly MissionTracker _missionTracker;
       private readonly ActorStallTracker _actorStallTracker;
+      private readonly RewardReader _rewardReader;
 
       private readonly MissionRepository _missionRepo;
       private readonly KillEventRepository _killRepo;
@@ -26,9 +29,11 @@ namespace StarCitiSync.Client.Services
         _logReader = new FileLogReader(logFilePath);
         _shopTransactionTracker = new ShopTransactionTracker();
         _killTracker = new KillTracker();
+        _bountyKillTracker = new BountyKillTracker();
         _missionTracker = new MissionTracker(_logReader);
         _commodityBoxTransactionTracker = new CommodityTransactionTracker();
         _actorStallTracker = new ActorStallTracker();
+        _rewardReader = new RewardReader();
 
         _missionRepo = new MissionRepository(connectionString);
         _killRepo = new KillEventRepository(connectionString);
@@ -46,6 +51,7 @@ namespace StarCitiSync.Client.Services
         {
           _missionTracker.ProcessLogLine(line);
           _killTracker.ProcessLogLine(line);
+          _bountyKillTracker.ProcessLogLine(line);
           _shopTransactionTracker.ProcessLogLine(line);
           _commodityBoxTransactionTracker.ProcessLogLine(line);
           _actorStallTracker.ProcessLogLine(line);
@@ -53,17 +59,37 @@ namespace StarCitiSync.Client.Services
 
           if (_missionTracker.hasNewEvent && _missionTracker.LastMissionEvent != null)
           {
-            _missionTracker.LastMissionEvent.SessionId = sessionInfo.SessionId;
-            if(_missionTracker.LastMissionEvent.EventType == "Started")
-              _missionRepo.Insert(_missionTracker.LastMissionEvent);
+            var missionEvent = _missionTracker.LastMissionEvent;
+            missionEvent.SessionId = sessionInfo.SessionId;
+            if (missionEvent.EventType == "Started")
+            {
+              // Insert immediately with any cached reward; OCR runs in the
+              // background so it never stalls the log pipeline.
+              var cachedReward = _missionRepo.GetOrInsertReward(missionEvent.Contract ?? string.Empty, 0);
+              _missionRepo.Insert(missionEvent, cachedReward);
+              if (cachedReward == 0)
+                _ = Task.Run(() => UpdateRewardFromScreen(missionEvent));
+            }
             else
-              _missionRepo.Update(_missionTracker.LastMissionEvent);
+            {
+              _missionRepo.Update(missionEvent);
+            }
           }
 
           if (_killTracker.HasNewKill && _killTracker.LastKillEvent != null)
           {
             _killTracker.LastKillEvent.SessionId = sessionInfo.SessionId;
             _killRepo.Insert(_killTracker.LastKillEvent);
+          }
+
+          if (_bountyKillTracker.HasNewKill && _bountyKillTracker.LastKillEvent is { } inferredKill)
+          {
+            inferredKill.SessionId = sessionInfo.SessionId;
+            if (inferredKill.DamageType == "Bounty")
+              inferredKill.Killer = sessionInfo.Username ?? "You";
+            else
+              inferredKill.EntityName = sessionInfo.Username ?? "You";
+            _killRepo.Insert(inferredKill);
           }
 
           if (_actorStallTracker.HasNewStall && _actorStallTracker.LastStallEvent != null)
@@ -82,40 +108,49 @@ namespace StarCitiSync.Client.Services
             }
           }
 
-          if (_shopTransactionTracker.Transactions.Count > 0)
+          if (_shopTransactionTracker.NewTransaction is { } newShopTransaction)
           {
-            var lastTransaction = _shopTransactionTracker.Transactions[^1];
-            if (lastTransaction != null && lastTransaction.SessionId == null)
-            {
-              lastTransaction.SessionId = sessionInfo.SessionId;
-              _shopRepo.Insert(lastTransaction);
-            }
-            else if (lastTransaction != null && lastTransaction.SessionId == sessionInfo.SessionId)
-            {
-              if (lastTransaction.Result != "pending")
-              {
-                _shopRepo.UpdateResult(
-                    lastTransaction.SessionId,
-                    lastTransaction.Timestamp,
-                    lastTransaction.ItemName,
-                    lastTransaction.Result
-                );
-              }
-            }
+            newShopTransaction.SessionId = sessionInfo.SessionId;
+            _shopRepo.Insert(newShopTransaction);
           }
-          if (_commodityBoxTransactionTracker.Transactions.Count > 0)
+
+          if (_shopTransactionTracker.CompletedTransaction is { SessionId: not null } completedShopTransaction)
           {
-            var lastCommodityTransaction = _commodityBoxTransactionTracker.Transactions[^1];
-            if (lastCommodityTransaction != null && lastCommodityTransaction.SessionId == null)
-            {
-              lastCommodityTransaction.SessionId = sessionInfo.SessionId;
-              _commodityBoxRepo.Insert(lastCommodityTransaction);
-            }
+            _shopRepo.UpdateResult(
+                completedShopTransaction.SessionId,
+                completedShopTransaction.Timestamp,
+                completedShopTransaction.ItemName,
+                completedShopTransaction.Result
+            );
+          }
+
+          foreach (var commodityTransaction in _commodityBoxTransactionTracker.NewTransactions)
+          {
+            commodityTransaction.SessionId = sessionInfo.SessionId;
+            _commodityBoxRepo.Insert(commodityTransaction);
           }
         }
       }
       catch (TaskCanceledException)
       {
+      }
+    }
+
+    private void UpdateRewardFromScreen(MissionEvent missionEvent)
+    {
+      try
+      {
+        var scannedReward = _rewardReader.ReadCurrentMissionReward();
+        if (scannedReward <= 0)
+          return;
+
+        var reward = _missionRepo.GetOrInsertReward(missionEvent.Contract ?? string.Empty, scannedReward);
+        Console.WriteLine($"🎁 Reward for contract '{missionEvent.Contract}': {reward}");
+        _missionRepo.UpdateReward(missionEvent.SessionId!, missionEvent.MissionId!, reward);
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"Could not read mission reward from screen: {ex.Message}");
       }
     }
   }

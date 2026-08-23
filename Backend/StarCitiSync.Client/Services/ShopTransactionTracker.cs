@@ -1,4 +1,4 @@
-﻿using StarCitiSync.Client.Models;
+using StarCitiSync.Client.Models;
 using StarCitiSync.Client.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -9,12 +9,18 @@ namespace StarCitiSync.Client.Services
 {
   public class ShopTransactionTracker : IShopTransactionTracker, ILogLineProcessor
   {
-    private readonly List<ShopTransaction> _transactions = new();
+    // Transactions awaiting their ShopFlowResponse result
+    private readonly List<ShopTransaction> _pendingTransactions = new();
+    private const int MaxPendingTransactions = 50;
 
-    public IReadOnlyList<ShopTransaction> Transactions => _transactions;
+    public ShopTransaction? NewTransaction { get; private set; }
+    public ShopTransaction? CompletedTransaction { get; private set; }
 
     public void ProcessLogLine(object logLine)
     {
+      NewTransaction = null;
+      CompletedTransaction = null;
+
       if (logLine == null) return;
       string line = logLine.ToString();
 
@@ -48,7 +54,11 @@ namespace StarCitiSync.Client.Services
           TransactionType = "Buy"
         };
 
-        _transactions.Add(transaction);
+        _pendingTransactions.Add(transaction);
+        if (_pendingTransactions.Count > MaxPendingTransactions)
+          _pendingTransactions.RemoveAt(0);
+
+        NewTransaction = transaction;
       }
       // Match confirmation
       else if (line.Contains("ShopFlowResponse"))
@@ -60,37 +70,13 @@ namespace StarCitiSync.Client.Services
         var result = resultMatch.Success ? resultMatch.Groups[1].Value : null;
 
         // Set result on latest pending with same shopId
-        var pending = _transactions.LastOrDefault(t => t.ShopId == shopId && t.Result == "Pending");
-        if (pending != null)
+        var pending = _pendingTransactions.LastOrDefault(t => t.ShopId == shopId && t.Result == "Pending");
+        if (pending != null && result != null)
         {
           pending.Result = result;
+          _pendingTransactions.Remove(pending);
+          CompletedTransaction = pending;
         }
-      }
-    }
-
-    public void PrintTransactions()
-    {
-      var lastTransaction = this.Transactions[^1];
-      if (lastTransaction != null
-          && lastTransaction.Result == "Success"
-          && (lastTransaction.Timestamp == DateTime.MinValue || lastTransaction.Timestamp > DateTime.MinValue) // avoid duplicate prints if needed
-          )
-      {
-
-        var prevColor = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine(
-          $"SHOP SUCCESS: {lastTransaction.Timestamp:yyyy-MM-dd HH:mm:ss} {lastTransaction.ShopName} {lastTransaction.ItemName} {lastTransaction.ClientPrice} {lastTransaction.CurrencyType} x{lastTransaction.Quantity}"
-        );
-        Console.ForegroundColor = prevColor;
-      }
-
-      var trackerField = typeof(ShopTransactionTracker)
-        .GetField("_transactions", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-      if (trackerField != null)
-      {
-        var list = trackerField.GetValue(this) as System.Collections.IList;
-        list?.Remove(lastTransaction);
       }
     }
   }

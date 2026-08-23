@@ -1,10 +1,10 @@
-﻿using StarCitiSync.Client.Models;
-using System.Collections.Generic;
+using StarCitiSync.Client.Models;
 
 namespace StarCitiSync.Client.Services.Interfaces
 {
   public interface IShopTransactionTracker
   {
-    IReadOnlyList<ShopTransaction> Transactions { get; }
+    ShopTransaction? NewTransaction { get; }
+    ShopTransaction? CompletedTransaction { get; }
   }
 }

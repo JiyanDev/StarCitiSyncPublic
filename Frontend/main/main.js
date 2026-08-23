@@ -4,12 +4,18 @@ const fs = require('fs');
 const { spawn } = require('child_process'); 
 const {getCommodityProfitAndROIForSession, getLatestStallActors, updateAppClose, getdbPath, initDb, getLatestSession, getSessionById, getMissionCountForSession, getLatestUnfinishedMission, getTotalRewardForSession, getRewardLastHourForSession, getRewardPer10MinLastHour, getShopSummary, getLatestOverlayKillEvents} = require('./db');
 const electronSquirrelStartup = require('electron-squirrel-startup');
-const { checkForUpdates } = require('./updater');
+const { updateElectronApp } = require('update-electron-app');
 
 if (electronSquirrelStartup) {
   // Squirrel startup event, do not continue
   app.quit();
 }
+
+// Background auto-updates via update.electronjs.org; applied on next app start
+updateElectronApp({
+  updateInterval: '1 hour',
+  notifyUser: false
+});
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 let appStartTime = Date.now();
 
@@ -114,7 +120,7 @@ ipcMain.handle('dark-mode:system', () => {
 });
 
 ipcMain.handle('get-reward-graph', async () => {
-  dbPath = getdbPath();
+  const dbPath = getdbPath();
   if (!dbPath) {
     console.warn('DB not ready in get-reward-graph');
     return [];
@@ -167,7 +173,7 @@ async function checkSessionLoop() {
 }
 
 function startTimer() {
-  //console.log("⏱️ Timer started:", startTime.toISOString());
+  if (timer) clearInterval(timer);
   timer = setInterval(async () => {
     if (!startTime) return;
     const diff = Date.now() - startTime.getTime();
@@ -255,7 +261,7 @@ async function pollSpendings() {
 }
 
 async function pollLatestOverlayKillEvents() {
-  if (!overlayWindow || overlayWindow.isDestroyed()) return;
+  if (!currentSessionId || !overlayWindow || overlayWindow.isDestroyed()) return;
 
   try {
     const events = await getLatestOverlayKillEvents(5);
@@ -268,7 +274,7 @@ async function pollLatestOverlayKillEvents() {
 }
 
 async function pollLatestStallActors() {
-  if (!overlayWindow || overlayWindow.isDestroyed()) return;
+  if (!currentSessionId || !overlayWindow || overlayWindow.isDestroyed()) return;
   try {
     const events = await getLatestStallActors(currentSessionId, 10);
     overlayWindow.webContents.send('session:latest-stall-actors', events);
@@ -380,10 +386,6 @@ app.whenReady().then(() => {
   ]);
   tray.setContextMenu(trayMenu);
 
-  if (app.isPackaged) {
-    checkForUpdates();
-  }
-  
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

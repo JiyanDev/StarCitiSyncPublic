@@ -8,10 +8,47 @@ using Tesseract;
 
 namespace StarCitiSync.Client.Services.OCR
 {
-  public class RewardReader
+  public class RewardReader : IDisposable
   {
+    private TesseractEngine? _engine;
+    private readonly object _ocrLock = new();
+
     [DllImport("user32.dll", SetLastError = true)]
     static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+    // Reads the mission reward from the game window, or 0 if unavailable.
+    public int ReadCurrentMissionReward()
+    {
+      lock (_ocrLock)
+      {
+        var gameWindowRect = GetGameWindowRect("Star Citizen");
+        if (gameWindowRect == Rectangle.Empty)
+        {
+          Console.WriteLine("Star Citizen window not found");
+          return 0;
+        }
+
+        var rewardArea = GetScaledRewardArea(gameWindowRect);
+        return ReadRewardFromGame("Star Citizen", rewardArea);
+      }
+    }
+
+    private TesseractEngine GetEngine()
+    {
+      if (_engine == null)
+      {
+        string exeDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        string tessdataPath = Path.Combine(exeDir, "tessdata");
+        _engine = new TesseractEngine(tessdataPath, "eng", EngineMode.Default);
+      }
+      return _engine;
+    }
+
+    public void Dispose()
+    {
+      _engine?.Dispose();
+      _engine = null;
+    }
 
     [DllImport("user32.dll")]
     static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
@@ -37,13 +74,13 @@ namespace StarCitiSync.Client.Services.OCR
 
       if (hWnd == IntPtr.Zero)
       {
-        Console.WriteLine("❌ Kunde inte hitta Star Citizen-fönstret.");
+        Console.WriteLine("❌ Could not find the Star Citizen window.");
         return 0;
       }
 
       if (!GetWindowRect(hWnd, out var rect))
       {
-        Console.WriteLine("❌ Kunde inte läsa fönstrets koordinater.");
+        Console.WriteLine("❌ Could not read the window coordinates.");
         return 0;
       }
 
@@ -75,11 +112,7 @@ namespace StarCitiSync.Client.Services.OCR
       bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
       ms.Position = 0;
       using var img = Pix.LoadFromMemory(ms.ToArray());
-      string exeDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-      Console.WriteLine($"🔍 Using Tesseract data from: {exeDir}");
-      string tessdataPath = Path.Combine(exeDir, "tessdata");
-      using var engine = new TesseractEngine(tessdataPath, "eng", EngineMode.Default);
-      using var page = engine.Process(img);
+      using var page = GetEngine().Process(img);
 
       var text = page.GetText();
       Console.WriteLine($"📄 TEXT: '{text}'");
